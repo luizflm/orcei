@@ -2,7 +2,7 @@
 
 declare(strict_types = 1);
 
-use App\Actions\Transactions\UpdateTransaction;
+use App\Actions\Transactions\{CreateTransaction, UpdateTransaction};
 use App\Enums\{TransactionMethod, TransactionType};
 use App\Models\{Account, Category, Transaction, User};
 
@@ -65,9 +65,7 @@ it('persists the updated transaction to the database', function (): void {
         'date'        => '2026-05-01',
     ]);
 
-    $fresh = Transaction::find($transaction->id);
-
-    expect($fresh->amount)->toBe('999.99');
+    expect($transaction->fresh()->amount)->toBe('999.99');
 });
 
 it('returns a fresh instance of the transaction', function (): void {
@@ -95,6 +93,98 @@ it('returns a fresh instance of the transaction', function (): void {
         ->and($result->description)->toBe('Fresh instance check.');
 });
 
+it('reverses old balance effect and applies new one on the same account', function (): void {
+    $user     = User::factory()->create()->fresh();
+    $account  = Account::factory()->for($user)->create(['balance' => '1000.00'])->fresh();
+    $category = Category::factory()->for($user)->create()->fresh();
+
+    $transaction = app(CreateTransaction::class)([
+        'account_id'  => $account->id,
+        'category_id' => $category->id,
+        'type'        => TransactionType::EXPENSE->value,
+        'method'      => TransactionMethod::PIX->value,
+        'amount'      => '200.00',
+        'description' => null,
+        'date'        => '2026-05-01',
+    ], $user->id);
+
+    expect($account->fresh()->balance)->toBe('800.00');
+
+    app(UpdateTransaction::class)($transaction, [
+        'account_id'  => $account->id,
+        'category_id' => $category->id,
+        'type'        => TransactionType::INCOME->value,
+        'method'      => TransactionMethod::PIX->value,
+        'amount'      => '150.00',
+        'description' => null,
+        'date'        => '2026-05-01',
+    ]);
+
+    expect($account->fresh()->balance)->toBe('1150.00');
+});
+
+it('adjusts balances across two accounts when the account changes', function (): void {
+    $user       = User::factory()->create()->fresh();
+    $oldAccount = Account::factory()->for($user)->create(['balance' => '500.00'])->fresh();
+    $newAccount = Account::factory()->for($user)->create(['balance' => '200.00'])->fresh();
+    $category   = Category::factory()->for($user)->create()->fresh();
+
+    $transaction = app(CreateTransaction::class)([
+        'account_id'  => $oldAccount->id,
+        'category_id' => $category->id,
+        'type'        => TransactionType::EXPENSE->value,
+        'method'      => TransactionMethod::CASH->value,
+        'amount'      => '100.00',
+        'description' => null,
+        'date'        => '2026-05-01',
+    ], $user->id);
+
+    expect($oldAccount->fresh()->balance)->toBe('400.00');
+
+    app(UpdateTransaction::class)($transaction, [
+        'account_id'  => $newAccount->id,
+        'category_id' => $category->id,
+        'type'        => TransactionType::INCOME->value,
+        'method'      => TransactionMethod::CASH->value,
+        'amount'      => '300.00',
+        'description' => null,
+        'date'        => '2026-05-01',
+    ]);
+
+    expect($oldAccount->fresh()->balance)->toBe('500.00');
+    expect($newAccount->fresh()->balance)->toBe('500.00');
+});
+
+it('does not change the account balance when only unrelated fields are updated', function (): void {
+    $user     = User::factory()->create()->fresh();
+    $account  = Account::factory()->for($user)->create(['balance' => '1000.00'])->fresh();
+    $category = Category::factory()->for($user)->create()->fresh();
+
+    $transaction = app(CreateTransaction::class)([
+        'account_id'  => $account->id,
+        'category_id' => $category->id,
+        'type'        => TransactionType::EXPENSE->value,
+        'method'      => TransactionMethod::PIX->value,
+        'amount'      => '200.00',
+        'description' => 'Old description.',
+        'date'        => '2026-01-01',
+    ], $user->id);
+
+    expect($account->fresh()->balance)->toBe('800.00');
+
+    app(UpdateTransaction::class)($transaction, [
+        'account_id'  => $account->id,
+        'category_id' => $category->id,
+        'type'        => TransactionType::EXPENSE->value,
+        'method'      => TransactionMethod::CASH->value,
+        'amount'      => '200.00',
+        'description' => 'Updated description.',
+        'date'        => '2026-06-01',
+    ]);
+
+    expect($account->fresh()->balance)->toBe('800.00');
+});
+
 it('preserves the original user_id after updating transaction fields', function (): void {
     $owner    = User::factory()->create()->fresh();
     $account  = Account::factory()->for($owner)->create()->fresh();
@@ -105,8 +195,7 @@ it('preserves the original user_id after updating transaction fields', function 
         'category_id' => $category->id,
     ])->fresh();
 
-    $action = app(UpdateTransaction::class);
-    $action($transaction, [
+    app(UpdateTransaction::class)($transaction, [
         'account_id'  => $account->id,
         'category_id' => $category->id,
         'type'        => TransactionType::EXPENSE->value,
@@ -116,5 +205,5 @@ it('preserves the original user_id after updating transaction fields', function 
         'date'        => '2026-05-01',
     ]);
 
-    expect(Transaction::find($transaction->id)->user_id)->toBe($owner->id);
+    expect($transaction->fresh()->user_id)->toBe($owner->id);
 });

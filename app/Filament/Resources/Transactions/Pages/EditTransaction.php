@@ -4,7 +4,7 @@ declare(strict_types = 1);
 
 namespace App\Filament\Resources\Transactions\Pages;
 
-use App\Actions\Transactions\UpdateTransaction as UpdateTransactionAction;
+use App\Actions\Transactions\{DeleteTransaction as DeleteTransactionAction, UpdateTransaction as UpdateTransactionAction};
 use App\Filament\Resources\Transactions\TransactionResource;
 use App\Models\Transaction;
 use Filament\Actions\DeleteAction;
@@ -18,7 +18,12 @@ class EditTransaction extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            DeleteAction::make(),
+            DeleteAction::make()
+                ->using(function (Transaction $record): bool {
+                    app(DeleteTransactionAction::class)($record);
+
+                    return true;
+                }),
         ];
     }
 

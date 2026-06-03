@@ -58,6 +58,44 @@ it('persists the transaction to the database', function (): void {
     )->toBeTrue();
 });
 
+it('decreases the account balance when creating an expense transaction', function (): void {
+    $user     = User::factory()->create()->fresh();
+    $account  = Account::factory()->for($user)->create(['balance' => '1000.00'])->fresh();
+    $category = Category::factory()->for($user)->create()->fresh();
+
+    $action = app(CreateTransaction::class);
+    $action([
+        'account_id'  => $account->id,
+        'category_id' => $category->id,
+        'type'        => TransactionType::EXPENSE->value,
+        'method'      => TransactionMethod::PIX->value,
+        'amount'      => '250.00',
+        'description' => null,
+        'date'        => '2026-05-01',
+    ], $user->id);
+
+    expect($account->fresh()->balance)->toBe('750.00');
+});
+
+it('increases the account balance when creating an income transaction', function (): void {
+    $user     = User::factory()->create()->fresh();
+    $account  = Account::factory()->for($user)->create(['balance' => '500.00'])->fresh();
+    $category = Category::factory()->for($user)->create()->fresh();
+
+    $action = app(CreateTransaction::class);
+    $action([
+        'account_id'  => $account->id,
+        'category_id' => $category->id,
+        'type'        => TransactionType::INCOME->value,
+        'method'      => TransactionMethod::CASH->value,
+        'amount'      => '300.00',
+        'description' => null,
+        'date'        => '2026-05-01',
+    ], $user->id);
+
+    expect($account->fresh()->balance)->toBe('800.00');
+});
+
 it('creates a transaction without a description', function (): void {
     $user     = User::factory()->create()->fresh();
     $account  = Account::factory()->for($user)->create()->fresh();
