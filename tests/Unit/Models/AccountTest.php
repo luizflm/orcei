@@ -10,6 +10,7 @@ test('to array', function (): void {
         'id',
         'user_id',
         'name',
+        'balance',
         'created_at',
         'updated_at',
     ]);

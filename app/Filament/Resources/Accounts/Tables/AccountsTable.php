@@ -17,6 +17,9 @@ class AccountsTable
                 TextColumn::make('name')
                     ->sortable()
                     ->searchable(),
+                TextColumn::make('balance')
+                    ->sortable()
+                    ->numeric(decimalPlaces: 2),
             ])
             ->filters([])
             ->recordActions([

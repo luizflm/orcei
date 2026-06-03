@@ -26,7 +26,7 @@ it('creates an account and assigns it to the authenticated user', function (): v
     $this->actingAs($user);
 
     Livewire::test(CreateAccount::class)
-        ->fillForm(['name' => 'New Savings Account'])
+        ->fillForm(['name' => 'New Savings Account', 'balance' => '1000.00'])
         ->call('create')
         ->assertHasNoFormErrors();
 
@@ -62,7 +62,7 @@ it('updates an existing account', function (): void {
     $this->actingAs($user);
 
     Livewire::test(EditAccount::class, ['record' => $account->getRouteKey()])
-        ->fillForm(['name' => 'Updated Name'])
+        ->fillForm(['name' => 'Updated Name', 'balance' => '2000.00'])
         ->call('save')
         ->assertHasNoFormErrors();
 

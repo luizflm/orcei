@@ -16,6 +16,12 @@ class AccountForm
                 TextInput::make('name')
                     ->required()
                     ->maxLength(100),
+                TextInput::make('balance')
+                    ->required()
+                    ->numeric()
+                    ->minValue(0)
+                    ->prefix('R$')
+                    ->step(0.01),
             ]);
     }
 }
