@@ -12,13 +12,14 @@ RUN apt-get update && apt-get install -y --no-install-recommends --fix-missing \
     libxml2-dev \
     libpq-dev \
     librdkafka-dev \
+    libicu-dev \
     zip \
     unzip \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
 # Install PHP extensions
-RUN docker-php-ext-install pdo_pgsql mbstring exif pcntl bcmath gd sockets
+RUN docker-php-ext-install pdo_pgsql mbstring exif pcntl bcmath gd sockets intl
 
 # Get latest Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer

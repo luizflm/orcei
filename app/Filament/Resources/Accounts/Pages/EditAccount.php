@@ -1,0 +1,32 @@
+<?php
+
+declare(strict_types = 1);
+
+namespace App\Filament\Resources\Accounts\Pages;
+
+use App\Actions\Accounts\UpdateAccount as UpdateAccountAction;
+use App\Filament\Resources\Accounts\AccountResource;
+use App\Models\Account;
+use Filament\Actions\DeleteAction;
+use Filament\Resources\Pages\EditRecord;
+use Illuminate\Database\Eloquent\Model;
+
+class EditAccount extends EditRecord
+{
+    protected static string $resource = AccountResource::class;
+
+    protected function getHeaderActions(): array
+    {
+        return [
+            DeleteAction::make(),
+        ];
+    }
+
+    protected function handleRecordUpdate(Model $record, array $data): Model
+    {
+        /** @var Account $record */
+        $action = app(UpdateAccountAction::class);
+
+        return $action($record, $data);
+    }
+}

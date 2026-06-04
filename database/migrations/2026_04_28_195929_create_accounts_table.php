@@ -16,6 +16,7 @@ return new class () extends Migration {
             $table->id();
             $table->foreignId('user_id')->constrained()->restrictOnDelete();
             $table->string('name', 100);
+            $table->decimal('balance', 15, 2);
             $table->timestamps();
         });
     }
