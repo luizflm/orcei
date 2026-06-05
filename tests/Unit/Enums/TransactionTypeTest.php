@@ -13,11 +13,11 @@ it('has the correct string value for Income', function (): void {
 });
 
 it('returns the correct label for Expense', function (): void {
-    expect(TransactionType::EXPENSE->label())->toBe('Expense');
+    expect(TransactionType::EXPENSE->label())->toBe(__('transaction.type.expense'));
 });
 
 it('returns the correct label for Income', function (): void {
-    expect(TransactionType::INCOME->label())->toBe('Income');
+    expect(TransactionType::INCOME->label())->toBe(__('transaction.type.income'));
 });
 
 it('can be instantiated from a raw string value', function (string $value, TransactionType $expected): void {

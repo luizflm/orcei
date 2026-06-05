@@ -22,6 +22,7 @@ class TransactionsTable
         return $table
             ->columns([
                 TextColumn::make('type')
+                    ->label(__('resource.transaction.field.type'))
                     ->formatStateUsing(fn (TransactionType $state): string => $state->label())
                     ->badge()
                     ->color(fn (TransactionType $state): string => match ($state) {
@@ -30,34 +31,42 @@ class TransactionsTable
                     })
                     ->sortable(),
                 TextColumn::make('account.name')
+                    ->label(__('resource.transaction.field.account'))
                     ->sortable()
                     ->searchable(),
                 TextColumn::make('category.name')
+                    ->label(__('resource.transaction.field.category'))
                     ->sortable()
                     ->searchable(),
                 TextColumn::make('amount')
+                    ->label(__('resource.transaction.field.amount'))
                     ->money('BRL')
                     ->sortable(),
                 TextColumn::make('date')
+                    ->label(__('resource.transaction.field.date'))
                     ->date('d/m/Y')
                     ->sortable(),
                 TextColumn::make('description')
+                    ->label(__('resource.transaction.field.description'))
                     ->limit(40),
             ])
             ->filters([
                 SelectFilter::make('type')
+                    ->label(__('resource.transaction.field.type'))
                     ->options(
                         collect(TransactionType::cases())
                             ->mapWithKeys(fn (TransactionType $case) => [$case->value => $case->label()])
                             ->all()
                     ),
                 SelectFilter::make('method')
+                    ->label(__('resource.transaction.field.method'))
                     ->options(
                         collect(TransactionMethod::cases())
                             ->mapWithKeys(fn (TransactionMethod $case) => [$case->value => $case->label()])
                             ->all()
                     ),
                 SelectFilter::make('account')
+                    ->label(__('resource.transaction.field.account'))
                     ->relationship(
                         name: 'account',
                         titleAttribute: 'name',
@@ -66,6 +75,7 @@ class TransactionsTable
                     ->searchable()
                     ->preload(),
                 SelectFilter::make('category')
+                    ->label(__('resource.transaction.field.category'))
                     ->relationship(
                         name: 'category',
                         titleAttribute: 'name',
@@ -74,10 +84,12 @@ class TransactionsTable
                     ->searchable()
                     ->preload(),
                 Filter::make('date')
+                    ->label(__('resource.transaction.field.date'))
                     ->columns(2)
                     ->columnSpanFull()
                     ->schema([
                         DatePicker::make('from')
+                            ->label(__('filter.date.from'))
                             ->native(false)
                             ->displayFormat('d/m/Y')
                             ->live()
@@ -88,6 +100,7 @@ class TransactionsTable
                             })
                             ->maxDate(fn (Get $get): string => $get('until') ?: now()->toDateString()),
                         DatePicker::make('until')
+                            ->label(__('filter.date.until'))
                             ->native(false)
                             ->displayFormat('d/m/Y')
                             ->live()
@@ -133,12 +146,12 @@ class TransactionsTable
                         $indicators = [];
 
                         if ($data['from'] ?? null) {
-                            $indicators[] = Indicator::make('From ' . Carbon::parse($data['from'])->format('d/m/Y'))
+                            $indicators[] = Indicator::make(__('filter.date.indicator.from', ['date' => Carbon::parse($data['from'])->format('d/m/Y')]))
                                 ->removeField('from');
                         }
 
                         if ($data['until'] ?? null) {
-                            $indicators[] = Indicator::make('Until ' . Carbon::parse($data['until'])->format('d/m/Y'))
+                            $indicators[] = Indicator::make(__('filter.date.indicator.until', ['date' => Carbon::parse($data['until'])->format('d/m/Y')]))
                                 ->removeField('until');
                         }
 

@@ -14,9 +14,11 @@ class AccountForm
         return $schema
             ->components([
                 TextInput::make('name')
+                    ->label(__('resource.account.field.name'))
                     ->required()
                     ->maxLength(100),
                 TextInput::make('balance')
+                    ->label(__('resource.account.field.balance'))
                     ->required()
                     ->numeric()
                     ->minValue(0)

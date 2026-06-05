@@ -16,9 +16,11 @@ class CategoryForm
         return $schema
             ->components([
                 TextInput::make('name')
+                    ->label(__('resource.category.field.name'))
                     ->required()
                     ->maxLength(100),
                 ColorPicker::make('color')
+                    ->label(__('resource.category.field.color'))
                     ->required()
                     ->suffixAction(
                         Action::make('generateRandomColor')

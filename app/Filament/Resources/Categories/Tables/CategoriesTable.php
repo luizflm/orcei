@@ -15,9 +15,11 @@ class CategoriesTable
         return $table
             ->columns([
                 TextColumn::make('name')
+                    ->label(__('resource.category.field.name'))
                     ->sortable()
                     ->searchable(),
-                ColorColumn::make('color'),
+                ColorColumn::make('color')
+                    ->label(__('resource.category.field.color')),
             ])
             ->filters([])
             ->recordActions([
