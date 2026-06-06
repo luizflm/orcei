@@ -24,6 +24,21 @@ class AccountResource extends Resource
 
     protected static string|UnitEnum|null $navigationGroup = 'Finance';
 
+    public static function getNavigationGroup(): ?string
+    {
+        return __('nav.group.finance');
+    }
+
+    public static function getModelLabel(): string
+    {
+        return __('resource.account.label');
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return __('resource.account.plural');
+    }
+
     public static function form(Schema $schema): Schema
     {
         return AccountForm::configure($schema);

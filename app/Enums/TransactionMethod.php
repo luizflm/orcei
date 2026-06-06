@@ -14,10 +14,10 @@ enum TransactionMethod: string
     public function label(): string
     {
         return match ($this) {
-            self::PIX    => 'Pix',
-            self::CASH   => 'Cash',
-            self::DEBIT  => 'Debit',
-            self::CREDIT => 'Credit',
+            self::PIX    => __('transaction.method.pix'),
+            self::CASH   => __('transaction.method.cash'),
+            self::DEBIT  => __('transaction.method.debit'),
+            self::CREDIT => __('transaction.method.credit'),
         };
     }
 }

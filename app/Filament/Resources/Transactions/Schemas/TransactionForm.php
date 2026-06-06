@@ -16,6 +16,7 @@ class TransactionForm
         return $schema
             ->components([
                 Select::make('account_id')
+                    ->label(__('resource.transaction.field.account'))
                     ->relationship(
                         name: 'account',
                         titleAttribute: 'name',
@@ -25,6 +26,7 @@ class TransactionForm
                     ->preload()
                     ->required(),
                 Select::make('category_id')
+                    ->label(__('resource.transaction.field.category'))
                     ->relationship(
                         name: 'category',
                         titleAttribute: 'name',
@@ -34,6 +36,7 @@ class TransactionForm
                     ->preload()
                     ->required(),
                 Select::make('type')
+                    ->label(__('resource.transaction.field.type'))
                     ->options(
                         collect(TransactionType::cases())
                             ->mapWithKeys(fn (TransactionType $case) => [$case->value => $case->label()])
@@ -41,6 +44,7 @@ class TransactionForm
                     )
                     ->required(),
                 Select::make('method')
+                    ->label(__('resource.transaction.field.method'))
                     ->options(
                         collect(TransactionMethod::cases())
                             ->mapWithKeys(fn (TransactionMethod $case) => [$case->value => $case->label()])
@@ -48,17 +52,21 @@ class TransactionForm
                     )
                     ->required(),
                 TextInput::make('amount')
+                    ->label(__('resource.transaction.field.amount'))
                     ->numeric()
                     ->step(0.01)
                     ->minValue(0.01)
                     ->prefix('R$')
                     ->required(),
-                Textarea::make('description')
-                    ->maxLength(255),
                 DatePicker::make('date')
+                    ->label(__('resource.transaction.field.date'))
                     ->native(false)
                     ->displayFormat('d/m/Y')
                     ->required(),
+                Textarea::make('description')
+                    ->label(__('resource.transaction.field.description'))
+                    ->maxLength(255)
+                    ->columnSpanFull(),
             ]);
     }
 }

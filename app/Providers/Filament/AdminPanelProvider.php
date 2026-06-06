@@ -1,7 +1,12 @@
 <?php
 
+declare(strict_types = 1);
+
 namespace App\Providers\Filament;
 
+use App\Http\Middleware\SetLocale;
+use Filament\Actions\Action;
+use Filament\Enums\UserMenuPosition;
 use Filament\Http\Middleware\{Authenticate, AuthenticateSession, DisableBladeIconComponents, DispatchServingFilamentEvent};
 use Filament\Pages\Dashboard;
 use Filament\{Panel, PanelProvider};
@@ -22,6 +27,11 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->login()
+            ->userMenu(position: UserMenuPosition::Sidebar)
+            ->userMenuItems([
+                Action::make('language')
+                    ->view('filament.user-menu.language-switcher'),
+            ])
             ->colors([
                 'primary' => Color::Amber,
             ])
@@ -45,6 +55,7 @@ class AdminPanelProvider extends PanelProvider
                 SubstituteBindings::class,
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
+                SetLocale::class,
             ])
             ->authMiddleware([
                 Authenticate::class,

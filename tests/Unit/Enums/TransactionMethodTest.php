@@ -21,19 +21,19 @@ it('has the correct string value for Credit', function (): void {
 });
 
 it('returns the correct label for Pix', function (): void {
-    expect(TransactionMethod::PIX->label())->toBe('Pix');
+    expect(TransactionMethod::PIX->label())->toBe(__('transaction.method.pix'));
 });
 
 it('returns the correct label for Cash', function (): void {
-    expect(TransactionMethod::CASH->label())->toBe('Cash');
+    expect(TransactionMethod::CASH->label())->toBe(__('transaction.method.cash'));
 });
 
 it('returns the correct label for Debit', function (): void {
-    expect(TransactionMethod::DEBIT->label())->toBe('Debit');
+    expect(TransactionMethod::DEBIT->label())->toBe(__('transaction.method.debit'));
 });
 
 it('returns the correct label for Credit', function (): void {
-    expect(TransactionMethod::CREDIT->label())->toBe('Credit');
+    expect(TransactionMethod::CREDIT->label())->toBe(__('transaction.method.credit'));
 });
 
 it('can be instantiated from a raw string value', function (string $value, TransactionMethod $expected): void {

@@ -15,9 +15,11 @@ class AccountsTable
         return $table
             ->columns([
                 TextColumn::make('name')
+                    ->label(__('resource.account.field.name'))
                     ->sortable()
                     ->searchable(),
                 TextColumn::make('balance')
+                    ->label(__('resource.account.field.balance'))
                     ->sortable()
                     ->numeric(decimalPlaces: 2),
             ])
