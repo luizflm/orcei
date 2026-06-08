@@ -36,5 +36,7 @@
     "currency.thousands_separator": ",",
     "widget.stats_overview.total_balance": "Total Balance",
     "widget.stats_overview.income_this_month": "Income This Month",
-    "widget.stats_overview.expenses_this_month": "Expenses This Month"
+    "widget.stats_overview.expenses_this_month": "Expenses This Month",
+    "widget.expenses_by_category.heading": "Expenses by Category",
+    "widget.expenses_by_category.dataset_label": "Expenses"
 }

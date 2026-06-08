@@ -9,25 +9,22 @@ use App\Models\{Account, Transaction};
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
 
-class StatsOverviewWidget extends BaseWidget
+class StatsOverview extends BaseWidget
 {
+    protected static ?int $sort = 1;
+
     protected function getStats(): array
     {
         $userId = auth()->id();
 
         $totalBalance = Account::where('user_id', $userId)->sum('balance');
 
-        $incomeThisMonth = Transaction::where('user_id', $userId)
-            ->where('type', TransactionType::INCOME->value)
+        $baseQuery = fn () => Transaction::where('user_id', $userId)
             ->whereYear('date', now()->year)
-            ->whereMonth('date', now()->month)
-            ->sum('amount');
+            ->whereMonth('date', now()->month);
 
-        $expensesThisMonth = Transaction::where('user_id', $userId)
-            ->where('type', TransactionType::EXPENSE->value)
-            ->whereYear('date', now()->year)
-            ->whereMonth('date', now()->month)
-            ->sum('amount');
+        $incomeThisMonth   = $baseQuery()->where('type', TransactionType::INCOME->value)->sum('amount');
+        $expensesThisMonth = $baseQuery()->where('type', TransactionType::EXPENSE->value)->sum('amount');
 
         return [
             Stat::make(__('widget.stats_overview.total_balance'), $this->formatMoney((string) $totalBalance))

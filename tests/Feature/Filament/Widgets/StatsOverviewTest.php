@@ -3,7 +3,7 @@
 declare(strict_types = 1);
 
 use App\Enums\TransactionType;
-use App\Filament\Widgets\StatsOverviewWidget;
+use App\Filament\Widgets\StatsOverview;
 use App\Models\{Account, Transaction, User};
 use Illuminate\Support\Facades\App;
 use Livewire\Livewire;
@@ -13,10 +13,10 @@ it('renders the widget with all three stat labels', function (): void {
 
     $this->actingAs($user);
 
-    Livewire::test(StatsOverviewWidget::class)
-        ->assertSee('Total Balance')
-        ->assertSee('Income This Month')
-        ->assertSee('Expenses This Month');
+    Livewire::test(StatsOverview::class)
+        ->assertSee(__('widget.stats_overview.total_balance'))
+        ->assertSee(__('widget.stats_overview.income_this_month'))
+        ->assertSee(__('widget.stats_overview.expenses_this_month'));
 });
 
 it('formats stats according to the selected locale', function (string $locale, string $expectedBalance, string $expectedIncome, string $expectedExpenses): void {
@@ -38,7 +38,7 @@ it('formats stats according to the selected locale', function (string $locale, s
     App::setLocale($locale);
     $this->actingAs($user);
 
-    Livewire::test(StatsOverviewWidget::class)
+    Livewire::test(StatsOverview::class)
         ->assertSee($expectedBalance)
         ->assertSee($expectedIncome)
         ->assertSee($expectedExpenses);

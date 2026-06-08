@@ -36,5 +36,7 @@
     "currency.thousands_separator": ".",
     "widget.stats_overview.total_balance": "Saldo Total",
     "widget.stats_overview.income_this_month": "Receitas do Mês",
-    "widget.stats_overview.expenses_this_month": "Despesas do Mês"
+    "widget.stats_overview.expenses_this_month": "Despesas do Mês",
+    "widget.expenses_by_category.heading": "Despesas por Categoria",
+    "widget.expenses_by_category.dataset_label": "Despesas"
 }
