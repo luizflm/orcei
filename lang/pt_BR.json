@@ -38,5 +38,7 @@
     "widget.stats_overview.income_this_month": "Receitas do Mês",
     "widget.stats_overview.expenses_this_month": "Despesas do Mês",
     "widget.expenses_by_category.heading": "Despesas por Categoria",
-    "widget.expenses_by_category.dataset_label": "Despesas"
+    "widget.expenses_by_category.dataset_label": "Despesas",
+    "widget.monthly_expenses.heading": "Despesas Mensais",
+    "widget.monthly_expenses.dataset_label": "Despesas"
 }
