@@ -11,7 +11,7 @@ use Filament\Http\Middleware\{Authenticate, AuthenticateSession, DisableBladeIco
 use Filament\Pages\Dashboard;
 use Filament\{Panel, PanelProvider};
 use Filament\Support\Colors\Color;
-use Filament\Widgets\{AccountWidget, FilamentInfoWidget};
+
 use Illuminate\Cookie\Middleware\{AddQueuedCookiesToResponse, EncryptCookies};
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Routing\Middleware\SubstituteBindings;
@@ -41,10 +41,7 @@ class AdminPanelProvider extends PanelProvider
                 Dashboard::class,
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
-            ->widgets([
-                AccountWidget::class,
-                FilamentInfoWidget::class,
-            ])
+            ->widgets([])
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,
