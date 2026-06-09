@@ -8,11 +8,14 @@ use App\Enums\TransactionType;
 use App\Models\Category;
 use Filament\Support\RawJs;
 use Filament\Widgets\ChartWidget;
+use Filament\Widgets\Concerns\InteractsWithPageFilters;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Database\Eloquent\Builder;
 
 class ExpensesByCategoryChart extends ChartWidget
 {
+    use InteractsWithPageFilters;
+
     protected static ?int $sort = 2;
 
     protected static bool $isLazy = true;
@@ -34,11 +37,14 @@ class ExpensesByCategoryChart extends ChartWidget
      */
     protected function getData(): array
     {
+        $accountIds = $this->pageFilters['accountIds'] ?? [];
+
         $categories = Category::where('user_id', auth()->id())
-            ->withSum(['transactions as total' => function (Builder $query): void {
+            ->withSum(['transactions as total' => function (Builder $query) use ($accountIds): void {
                 $query->where('type', TransactionType::EXPENSE->value)
                     ->whereYear('date', now()->year)
-                    ->whereMonth('date', now()->month);
+                    ->whereMonth('date', now()->month)
+                    ->when(!empty($accountIds), fn (Builder $q) => $q->whereIn('account_id', $accountIds));
             }], 'amount')
             ->get()
             ->filter(fn (Category $category): bool => (float) $category->getAttribute('total') > 0)

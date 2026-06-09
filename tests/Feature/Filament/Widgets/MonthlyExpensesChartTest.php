@@ -148,6 +148,78 @@ it('excludes transactions older than 6 months', function (): void {
     expect(array_sum($data['datasets'][0]['data']))->toBe(0.0);
 });
 
+it('filters monthly expenses by selected account ids', function (): void {
+    $user = User::factory()->create()->fresh();
+
+    $accountA = Account::factory()->for($user)->create()->fresh();
+    $accountB = Account::factory()->for($user)->create()->fresh();
+    $category = Category::factory()->for($user)->create()->fresh();
+
+    Transaction::factory()->for($user)->for($accountA)->for($category)->create([
+        'type'   => TransactionType::EXPENSE->value,
+        'amount' => '150.00',
+        'date'   => now()->startOfMonth(),
+    ]);
+
+    Transaction::factory()->for($user)->for($accountB)->for($category)->create([
+        'type'   => TransactionType::EXPENSE->value,
+        'amount' => '350.00',
+        'date'   => now()->startOfMonth(),
+    ]);
+
+    $this->actingAs($user);
+
+    $data = Livewire::test(MonthlyExpensesChart::class, ['pageFilters' => ['accountIds' => [$accountA->id]]])->instance()->getData();
+
+    expect($data['datasets'][0]['data'][5])->toBe(150.0);
+});
+
+it('shows all expenses when no account filter is applied', function (): void {
+    $user = User::factory()->create()->fresh();
+
+    $accountA = Account::factory()->for($user)->create()->fresh();
+    $accountB = Account::factory()->for($user)->create()->fresh();
+    $category = Category::factory()->for($user)->create()->fresh();
+
+    Transaction::factory()->for($user)->for($accountA)->for($category)->create([
+        'type'   => TransactionType::EXPENSE->value,
+        'amount' => '200.00',
+        'date'   => now()->startOfMonth(),
+    ]);
+
+    Transaction::factory()->for($user)->for($accountB)->for($category)->create([
+        'type'   => TransactionType::EXPENSE->value,
+        'amount' => '100.00',
+        'date'   => now()->startOfMonth(),
+    ]);
+
+    $this->actingAs($user);
+
+    $data = Livewire::test(MonthlyExpensesChart::class, ['pageFilters' => ['accountIds' => []]])->instance()->getData();
+
+    expect($data['datasets'][0]['data'][5])->toBe(300.0);
+});
+
+it('returns zero for all months when a foreign account id is injected via the filter', function (): void {
+    $user      = User::factory()->create()->fresh();
+    $otherUser = User::factory()->create()->fresh();
+
+    $otherAccount  = Account::factory()->for($otherUser)->create()->fresh();
+    $otherCategory = Category::factory()->for($otherUser)->create()->fresh();
+
+    Transaction::factory()->for($otherUser)->for($otherAccount)->for($otherCategory)->create([
+        'type'   => TransactionType::EXPENSE->value,
+        'amount' => '777.00',
+        'date'   => now()->startOfMonth(),
+    ]);
+
+    $this->actingAs($user);
+
+    $data = Livewire::test(MonthlyExpensesChart::class, ['pageFilters' => ['accountIds' => [$otherAccount->id]]])->instance()->getData();
+
+    expect(array_sum($data['datasets'][0]['data']))->toBe(0.0);
+});
+
 it('returns 6 months of labels', function (): void {
     $user = User::factory()->create()->fresh();
 

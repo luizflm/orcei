@@ -8,11 +8,14 @@ use App\Enums\TransactionType;
 use App\Models\Transaction;
 use Filament\Support\RawJs;
 use Filament\Widgets\ChartWidget;
+use Filament\Widgets\Concerns\InteractsWithPageFilters;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Support\Carbon;
 
 class MonthlyExpensesChart extends ChartWidget
 {
+    use InteractsWithPageFilters;
+
     protected static ?int $sort = 3;
 
     protected static bool $isLazy = true;
@@ -34,14 +37,19 @@ class MonthlyExpensesChart extends ChartWidget
      */
     public function getData(): array
     {
-        $months = collect(range(5, 0))->map(fn (int $offset): Carbon => now()->subMonths($offset)->startOfMonth());
+        $accountIds = $this->pageFilters['accountIds'] ?? [];
+        $months     = collect(range(5, 0))->map(fn (int $offset): Carbon => now()->subMonths($offset)->startOfMonth());
 
-        $expensesByMonth = Transaction::where('user_id', auth()->id())
+        $expensesByMonth = Transaction::query()
+            ->select(['date', 'amount'])
+            ->where('user_id', auth()->id())
             ->where('type', TransactionType::EXPENSE->value)
             ->whereBetween('date', [$months->first(), now()->endOfMonth()])
+            ->when(!empty($accountIds), fn ($q) => $q->whereIn('account_id', $accountIds))
+            ->toBase()
             ->get()
-            ->groupBy(fn (Transaction $transaction): string => $transaction->date->format('Y-m'))
-            ->map(fn ($group): float => $group->sum(fn (Transaction $t): float => (float) $t->amount));
+            ->groupBy(fn (object $row): string => substr((string) $row->date, 0, 7))
+            ->map(fn ($group): float => $group->sum(fn (object $row): float => (float) $row->amount));
 
         $labels = $months->map(fn (Carbon $month): string => $month->translatedFormat('M Y'))->all();
 
