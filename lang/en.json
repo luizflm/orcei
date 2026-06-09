@@ -30,5 +30,15 @@
     "filter.date.from": "From",
     "filter.date.until": "Until",
     "filter.date.indicator.from": "From :date",
-    "filter.date.indicator.until": "Until :date"
+    "filter.date.indicator.until": "Until :date",
+    "currency.symbol": "$",
+    "currency.decimal_separator": ".",
+    "currency.thousands_separator": ",",
+    "widget.stats_overview.total_balance": "Total Balance",
+    "widget.stats_overview.income_this_month": "Income This Month",
+    "widget.stats_overview.expenses_this_month": "Expenses This Month",
+    "widget.expenses_by_category.heading": "Expenses by Category",
+    "widget.expenses_by_category.dataset_label": "Expenses",
+    "widget.monthly_expenses.heading": "Monthly Expenses",
+    "widget.monthly_expenses.dataset_label": "Expenses"
 }
