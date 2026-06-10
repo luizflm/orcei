@@ -3,7 +3,7 @@
 declare(strict_types = 1);
 
 use App\Filament\Resources\Accounts\Pages\{CreateAccount, EditAccount, ListAccounts};
-use App\Models\{Account, User};
+use App\Models\{Account, Transaction, User};
 use Livewire\Livewire;
 
 it('lists only the authenticated user accounts', function (): void {
@@ -95,4 +95,37 @@ it('returns 404 when accessing another user account on the edit page', function 
 
     $this->get(route('filament.admin.resources.accounts.edit', ['record' => $otherAccount->getRouteKey()]))
         ->assertNotFound();
+});
+
+it('does not update balance when account has transactions', function (): void {
+    $user    = User::factory()->create()->fresh();
+    $account = Account::factory()->for($user)->create(['name' => 'Savings', 'balance' => '100.00'])->fresh();
+    Transaction::factory()->for($account)->for($user)->create()->fresh();
+
+    $this->actingAs($user);
+
+    Livewire::test(EditAccount::class, ['record' => $account->getRouteKey()])
+        ->assertFormFieldDisabled('balance')
+        ->fillForm(['name' => 'Savings', 'balance' => '999.00'])
+        ->call('save')
+        ->assertHasNoFormErrors();
+
+    expect($account->fresh()->balance)->toBe('100.00');
+});
+
+it('allows name update when account has transactions and balance is unchanged', function (): void {
+    $user    = User::factory()->create()->fresh();
+    $account = Account::factory()->for($user)->create(['name' => 'Old Name', 'balance' => '100.00'])->fresh();
+    Transaction::factory()->for($account)->for($user)->create()->fresh();
+
+    $this->actingAs($user);
+
+    Livewire::test(EditAccount::class, ['record' => $account->getRouteKey()])
+        ->assertFormFieldDisabled('balance')
+        ->fillForm(['name' => 'New Name', 'balance' => '100.00'])
+        ->call('save')
+        ->assertHasNoFormErrors();
+
+    expect($account->fresh()->name)->toBe('New Name')
+        ->and($account->fresh()->balance)->toBe('100.00');
 });

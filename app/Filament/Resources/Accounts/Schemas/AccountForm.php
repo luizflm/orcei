@@ -4,6 +4,7 @@ declare(strict_types = 1);
 
 namespace App\Filament\Resources\Accounts\Schemas;
 
+use App\Models\Account;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Schema;
 
@@ -23,7 +24,8 @@ class AccountForm
                     ->numeric()
                     ->minValue(0)
                     ->prefix('R$')
-                    ->step(0.01),
+                    ->step(0.01)
+                    ->disabled(fn (?Account $record): bool => $record !== null && $record->transactions()->exists()),
             ]);
     }
 }
