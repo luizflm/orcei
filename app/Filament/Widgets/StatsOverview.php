@@ -6,22 +6,29 @@ namespace App\Filament\Widgets;
 
 use App\Enums\TransactionType;
 use App\Models\{Account, Transaction};
+use Filament\Widgets\Concerns\InteractsWithPageFilters;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
 
 class StatsOverview extends BaseWidget
 {
+    use InteractsWithPageFilters;
+
     protected static ?int $sort = 1;
 
     protected function getStats(): array
     {
-        $userId = auth()->id();
+        $userId     = auth()->id();
+        $accountIds = $this->pageFilters['accountIds'] ?? [];
 
-        $totalBalance = Account::where('user_id', $userId)->sum('balance');
+        $totalBalance = Account::where('user_id', $userId)
+            ->when(!empty($accountIds), fn ($q) => $q->whereIn('id', $accountIds))
+            ->sum('balance');
 
         $baseQuery = fn () => Transaction::where('user_id', $userId)
             ->whereYear('date', now()->year)
-            ->whereMonth('date', now()->month);
+            ->whereMonth('date', now()->month)
+            ->when(!empty($accountIds), fn ($q) => $q->whereIn('account_id', $accountIds));
 
         $incomeThisMonth   = $baseQuery()->where('type', TransactionType::INCOME->value)->sum('amount');
         $expensesThisMonth = $baseQuery()->where('type', TransactionType::EXPENSE->value)->sum('amount');

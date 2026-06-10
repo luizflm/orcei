@@ -40,5 +40,7 @@
     "widget.expenses_by_category.heading": "Expenses by Category",
     "widget.expenses_by_category.dataset_label": "Expenses",
     "widget.monthly_expenses.heading": "Monthly Expenses",
-    "widget.monthly_expenses.dataset_label": "Expenses"
+    "widget.monthly_expenses.dataset_label": "Expenses",
+    "widget.filters.accounts": "Accounts",
+    "widget.filters.all_accounts": "All accounts"
 }
