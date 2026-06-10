@@ -21,7 +21,7 @@ class AccountsTable
                 TextColumn::make('balance')
                     ->label(__('resource.account.field.balance'))
                     ->sortable()
-                    ->numeric(decimalPlaces: 2),
+                    ->money(__('currency.code')),
             ])
             ->filters([])
             ->recordActions([

@@ -40,7 +40,7 @@ class TransactionsTable
                     ->searchable(),
                 TextColumn::make('amount')
                     ->label(__('resource.transaction.field.amount'))
-                    ->money('BRL')
+                    ->money(__('currency.code'))
                     ->sortable(),
                 TextColumn::make('date')
                     ->label(__('resource.transaction.field.date'))

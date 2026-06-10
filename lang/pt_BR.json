@@ -31,6 +31,7 @@
     "filter.date.until": "Até",
     "filter.date.indicator.from": "De :date",
     "filter.date.indicator.until": "Até :date",
+    "currency.code": "BRL",
     "currency.symbol": "R$",
     "currency.decimal_separator": ",",
     "currency.thousands_separator": ".",

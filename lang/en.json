@@ -31,6 +31,7 @@
     "filter.date.until": "Until",
     "filter.date.indicator.from": "From :date",
     "filter.date.indicator.until": "Until :date",
+    "currency.code": "USD",
     "currency.symbol": "$",
     "currency.decimal_separator": ".",
     "currency.thousands_separator": ",",
