@@ -54,8 +54,8 @@ it('formats stats according to the selected locale', function (string $locale, s
         ->assertSee($expectedIncome)
         ->assertSee($expectedExpenses);
 })->with([
-    'english'             => ['en',    '$ 2,749.75',   '$ 2,500.50',   '$ 750.75'],
-    'portuguese (brazil)' => ['pt_BR', 'R$ 2.749,75',  'R$ 2.500,50',  'R$ 750,75'],
+    'english'             => ['en',    '$2,749.75',    '$2,500.50',    '$750.75'],
+    'portuguese (brazil)' => ['pt_BR', "R$\u{00A0}2.749,75", "R$\u{00A0}2.500,50", "R$\u{00A0}750,75"],
 ]);
 
 it('filters balance and transactions by selected account ids', function (): void {
@@ -89,8 +89,8 @@ it('filters balance and transactions by selected account ids', function (): void
     $this->actingAs($user);
 
     Livewire::test(StatsOverview::class, ['pageFilters' => ['accountIds' => [$accountA->id]]])
-        ->assertSee('$ 1,200.00')
-        ->assertSee('$ 200.00');
+        ->assertSee('$1,200.00')
+        ->assertSee('$200.00');
 });
 
 it('shows combined totals for all accounts when no account filter is set', function (): void {
@@ -102,7 +102,7 @@ it('shows combined totals for all accounts when no account filter is set', funct
     $this->actingAs($user);
 
     Livewire::test(StatsOverview::class, ['pageFilters' => ['accountIds' => []]])
-        ->assertSee('$ 1,000.00');
+        ->assertSee('$1,000.00');
 });
 
 it('does not include another user transactions when a foreign account id is injected via the filter', function (): void {
@@ -121,5 +121,5 @@ it('does not include another user transactions when a foreign account id is inje
 
     Livewire::test(StatsOverview::class, ['pageFilters' => ['accountIds' => [$otherAccount->id]]])
         ->assertSee(__('widget.stats_overview.income_this_month'))
-        ->assertDontSee('$ 8,888.00');
+        ->assertDontSee('$8,888.00');
 });

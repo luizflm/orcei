@@ -4,6 +4,7 @@ declare(strict_types = 1);
 
 namespace App\Models;
 
+use App\Casts\MoneyCast;
 use Database\Factories\AccountFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -25,7 +26,7 @@ class Account extends Model
     protected function casts(): array
     {
         return [
-            'balance' => 'decimal:2',
+            'balance' => MoneyCast::class,
         ];
     }
 

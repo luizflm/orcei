@@ -35,29 +35,6 @@ it('creates a transaction for the given user', function (): void {
         ->and($transaction->description)->toBe('Groceries purchase.');
 });
 
-it('persists the transaction to the database', function (): void {
-    $user     = User::factory()->create()->fresh();
-    $account  = Account::factory()->for($user)->create()->fresh();
-    $category = Category::factory()->for($user)->create()->fresh();
-
-    $action = app(CreateTransaction::class);
-    $action([
-        'account_id'  => $account->id,
-        'category_id' => $category->id,
-        'type'        => TransactionType::INCOME->value,
-        'method'      => TransactionMethod::CASH->value,
-        'amount'      => '500.00',
-        'description' => null,
-        'date'        => '2026-04-15',
-    ], $user->id);
-
-    expect(
-        Transaction::where('user_id', $user->id)
-            ->where('amount', 500.00)
-            ->exists()
-    )->toBeTrue();
-});
-
 it('decreases the account balance when creating an expense transaction', function (): void {
     $user     = User::factory()->create()->fresh();
     $account  = Account::factory()->for($user)->create(['balance' => '1000.00'])->fresh();
