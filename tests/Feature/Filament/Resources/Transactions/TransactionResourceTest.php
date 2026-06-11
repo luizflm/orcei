@@ -5,6 +5,7 @@ declare(strict_types = 1);
 use App\Enums\{TransactionMethod, TransactionType};
 use App\Filament\Resources\Transactions\Pages\{CreateTransaction, EditTransaction, ListTransactions};
 use App\Models\{Account, Category, Transaction, User};
+use Illuminate\Support\Facades\App;
 use Livewire\Livewire;
 
 it('lists only the authenticated user transactions', function (): void {
@@ -379,4 +380,53 @@ it('returns 404 when accessing another user transaction on the edit page', funct
 
     $this->get(route('filament.admin.resources.transactions.edit', ['record' => $otherTransaction->getRouteKey()]))
         ->assertNotFound();
+});
+
+it('accepts amount using BRL locale decimal format', function (): void {
+    App::setLocale('pt_BR');
+
+    $user     = User::factory()->create()->fresh();
+    $account  = Account::factory()->for($user)->create()->fresh();
+    $category = Category::factory()->for($user)->create()->fresh();
+
+    $this->actingAs($user);
+
+    Livewire::test(CreateTransaction::class)
+        ->fillForm([
+            'account_id'  => $account->id,
+            'category_id' => $category->id,
+            'type'        => TransactionType::EXPENSE->value,
+            'method'      => TransactionMethod::PIX->value,
+            'amount'      => '200,50',
+            'date'        => '2026-05-01',
+        ])
+        ->call('create')
+        ->assertHasNoFormErrors();
+
+    expect(
+        Transaction::where('user_id', $user->id)
+            ->where('account_id', $account->id)
+            ->first()
+            ->amount
+    )->toBe('200.50');
+});
+
+it('rejects a non-numeric amount value', function (): void {
+    $user     = User::factory()->create()->fresh();
+    $account  = Account::factory()->for($user)->create()->fresh();
+    $category = Category::factory()->for($user)->create()->fresh();
+
+    $this->actingAs($user);
+
+    Livewire::test(CreateTransaction::class)
+        ->fillForm([
+            'account_id'  => $account->id,
+            'category_id' => $category->id,
+            'type'        => TransactionType::EXPENSE->value,
+            'method'      => TransactionMethod::PIX->value,
+            'amount'      => 'abc',
+            'date'        => '2026-05-01',
+        ])
+        ->call('create')
+        ->assertHasFormErrors(['amount']);
 });
