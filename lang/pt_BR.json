@@ -35,6 +35,7 @@
     "currency.symbol": "R$",
     "currency.decimal_separator": ",",
     "currency.thousands_separator": ".",
+    "validation.min.numeric": "O campo :attribute deve ser no mínimo :min.",
     "widget.stats_overview.total_balance": "Saldo Total",
     "widget.stats_overview.income_this_month": "Receitas do Mês",
     "widget.stats_overview.expenses_this_month": "Despesas do Mês",

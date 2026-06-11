@@ -4,6 +4,7 @@ declare(strict_types = 1);
 
 use App\Filament\Resources\Accounts\Pages\{CreateAccount, EditAccount, ListAccounts};
 use App\Models\{Account, Transaction, User};
+use Illuminate\Support\Facades\App;
 use Livewire\Livewire;
 
 it('lists only the authenticated user accounts', function (): void {
@@ -128,4 +129,30 @@ it('allows name update when account has transactions and balance is unchanged', 
 
     expect($account->fresh()->name)->toBe('New Name')
         ->and($account->fresh()->balance)->toBe('100.00');
+});
+
+it('accepts balance using BRL locale decimal format', function (): void {
+    App::setLocale('pt_BR');
+
+    $user = User::factory()->create()->fresh();
+
+    $this->actingAs($user);
+
+    Livewire::test(CreateAccount::class)
+        ->fillForm(['name' => 'Poupança', 'balance' => '1000,50'])
+        ->call('create')
+        ->assertHasNoFormErrors();
+
+    expect(Account::where('user_id', $user->id)->where('name', 'Poupança')->first()->balance)->toBe('1000.50');
+});
+
+it('rejects a non-numeric balance value', function (): void {
+    $user = User::factory()->create()->fresh();
+
+    $this->actingAs($user);
+
+    Livewire::test(CreateAccount::class)
+        ->fillForm(['name' => 'Savings', 'balance' => 'abc'])
+        ->call('create')
+        ->assertHasFormErrors(['balance']);
 });
