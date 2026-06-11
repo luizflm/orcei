@@ -6,6 +6,7 @@ namespace App\Filament\Widgets;
 
 use App\Enums\TransactionType;
 use App\Models\Category;
+use App\ValueObjects\Money;
 use Filament\Support\RawJs;
 use Filament\Widgets\ChartWidget;
 use Filament\Widgets\Concerns\InteractsWithPageFilters;
@@ -54,7 +55,7 @@ class ExpensesByCategoryChart extends ChartWidget
             'datasets' => [
                 [
                     'label'           => __('widget.expenses_by_category.dataset_label'),
-                    'data'            => $categories->pluck('total')->map(fn (mixed $v): float => (float) $v)->values()->all(),
+                    'data'            => $categories->pluck('total')->map(fn (mixed $v): float => (float) Money::fromCents((int) $v)->toMajorUnits())->values()->all(),
                     'backgroundColor' => $categories->pluck('color')->values()->all(),
                 ],
             ],

@@ -16,6 +16,17 @@ test('to array', function (): void {
     ]);
 });
 
+it('casts balance to a major-unit string and stores integer cents', function (): void {
+    $account = Account::factory()->create(['balance' => '1234.56'])->fresh();
+
+    expect($account->balance)->toBe('1234.56');
+
+    $this->assertDatabaseHas('accounts', [
+        'id'      => $account->id,
+        'balance' => 123456,
+    ]);
+});
+
 it('belongs to user', function (): void {
     $user    = User::factory()->create()->fresh();
     $account = Account::factory()->for($user)->create()->fresh();

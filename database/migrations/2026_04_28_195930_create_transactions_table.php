@@ -19,7 +19,7 @@ return new class () extends Migration {
             $table->foreignId('category_id')->constrained()->restrictOnDelete();
             $table->string('method');
             $table->string('type');
-            $table->decimal('amount', 15, 2);
+            $table->bigInteger('amount');
             $table->string('description')->nullable();
             $table->date('date');
             $table->timestamps();

@@ -33,9 +33,15 @@ it('casts type to TransactionType enum', function (): void {
     expect($transaction->type)->toBeInstanceOf(TransactionType::class);
 });
 
-it('casts amount to a decimal string', function (): void {
+it('casts amount to a major-unit string and stores integer cents', function (): void {
     $transaction = Transaction::factory()->create(['amount' => '150.75'])->fresh();
+
     expect($transaction->amount)->toBe('150.75');
+
+    $this->assertDatabaseHas('transactions', [
+        'id'     => $transaction->id,
+        'amount' => 15075,
+    ]);
 });
 
 it('casts date to a Carbon instance', function (): void {

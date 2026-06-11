@@ -44,7 +44,7 @@ it('creates a transaction and assigns it to the authenticated user', function ()
     expect(
         Transaction::where('user_id', $user->id)
             ->where('account_id', $account->id)
-            ->where('amount', 200.00)
+            ->where('amount', 20000)
             ->exists()
     )->toBeTrue();
 });

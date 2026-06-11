@@ -6,6 +6,7 @@ namespace App\Filament\Widgets;
 
 use App\Enums\TransactionType;
 use App\Models\Transaction;
+use App\ValueObjects\Money;
 use Filament\Support\RawJs;
 use Filament\Widgets\ChartWidget;
 use Filament\Widgets\Concerns\InteractsWithPageFilters;
@@ -49,7 +50,7 @@ class MonthlyExpensesChart extends ChartWidget
             ->toBase()
             ->get()
             ->groupBy(fn (object $row): string => substr((string) $row->date, 0, 7))
-            ->map(fn ($group): float => $group->sum(fn (object $row): float => (float) $row->amount));
+            ->map(fn ($group): float => (float) Money::fromCents((int) $group->sum(fn (object $row): int => (int) $row->amount))->toMajorUnits());
 
         $labels = $months->map(fn (Carbon $month): string => $month->translatedFormat('M Y'))->all();
 

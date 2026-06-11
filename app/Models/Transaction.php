@@ -4,6 +4,7 @@ declare(strict_types = 1);
 
 namespace App\Models;
 
+use App\Casts\MoneyCast;
 use App\Enums\{TransactionMethod, TransactionType};
 use Database\Factories\TransactionFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -33,7 +34,7 @@ class Transaction extends Model
         return [
             'method' => TransactionMethod::class,
             'type'   => TransactionType::class,
-            'amount' => 'decimal:2',
+            'amount' => MoneyCast::class,
             'date'   => 'date',
         ];
     }
