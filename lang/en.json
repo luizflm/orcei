@@ -35,6 +35,7 @@
     "currency.symbol": "$",
     "currency.decimal_separator": ".",
     "currency.thousands_separator": ",",
+    "validation.min.numeric": "The :attribute field must be at least :min.",
     "widget.stats_overview.total_balance": "Total Balance",
     "widget.stats_overview.income_this_month": "Income This Month",
     "widget.stats_overview.expenses_this_month": "Expenses This Month",
