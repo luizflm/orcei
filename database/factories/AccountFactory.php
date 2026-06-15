@@ -23,7 +23,7 @@ class AccountFactory extends Factory
 
         return [
             'user_id' => User::factory(),
-            'name'    => fake()->randomElement($accountNames),
+            'name'    => fake()->randomElement($accountNames) . ' ' . fake()->unique()->numberBetween(1, 1_000_000),
             'balance' => fake()->randomFloat(2, 0, 10000),
         ];
     }

@@ -9,6 +9,7 @@ use Closure;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Schema;
 use Filament\Support\RawJs;
+use Illuminate\Validation\Rules\Unique;
 
 class AccountForm
 {
@@ -19,7 +20,24 @@ class AccountForm
                 TextInput::make('name')
                     ->label(__('resource.account.field.name'))
                     ->required()
-                    ->maxLength(100),
+                    ->maxLength(100)
+                    ->unique(
+                        modifyRuleUsing: fn (Unique $rule): Unique => $rule
+                            ->where('user_id', auth()->id())
+                            ->whereNull('deleted_at'),
+                    )
+                    ->rules([
+                        fn (): Closure => function (string $attribute, mixed $value, Closure $fail): void {
+                            $deletedAccountExists = Account::onlyTrashed()
+                                ->where('user_id', auth()->id())
+                                ->where('name', (string) $value)
+                                ->exists();
+
+                            if ($deletedAccountExists) {
+                                $fail(__('validation.account.name.deleted_exists'));
+                            }
+                        },
+                    ]),
                 TextInput::make('balance')
                     ->label(__('resource.account.field.balance'))
                     ->required()

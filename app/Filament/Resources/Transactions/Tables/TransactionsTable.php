@@ -20,6 +20,9 @@ class TransactionsTable
     public static function configure(Table $table): Table
     {
         return $table
+            ->modifyQueryUsing(fn (Builder $query): Builder => $query->with([
+                'account' => fn ($query) => $query->withTrashed(),
+            ]))
             ->columns([
                 TextColumn::make('type')
                     ->label(__('resource.transaction.field.type'))

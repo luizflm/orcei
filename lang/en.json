@@ -36,6 +36,8 @@
     "currency.decimal_separator": ".",
     "currency.thousands_separator": ",",
     "validation.min.numeric": "The :attribute field must be at least :min.",
+    "validation.unique": "The :attribute has already been taken.",
+    "validation.account.name.deleted_exists": "There is already a deleted account with this name, restore it.",
     "widget.stats_overview.total_balance": "Total Balance",
     "widget.stats_overview.income_this_month": "Income This Month",
     "widget.stats_overview.expenses_this_month": "Expenses This Month",

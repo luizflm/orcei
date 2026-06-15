@@ -13,6 +13,7 @@ test('to array', function (): void {
         'balance',
         'created_at',
         'updated_at',
+        'deleted_at',
     ]);
 });
 
@@ -42,4 +43,19 @@ it('has many transactions', function (): void {
 
     expect($account->transactions)->toHaveCount(1)
         ->and($account->transactions->first())->toBeInstanceOf(Transaction::class);
+});
+
+it('soft deletes the account', function (): void {
+    $account = Account::factory()->create()->fresh();
+
+    $account->delete();
+
+    expect($account->trashed())->toBeTrue()
+        ->and($account->deleted_at)->not->toBeNull()
+        ->and(Account::count())->toBe(0)
+        ->and(Account::withTrashed()->count())->toBe(1);
+
+    $this->assertSoftDeleted('accounts', [
+        'id' => $account->id,
+    ]);
 });

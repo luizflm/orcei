@@ -36,6 +36,8 @@
     "currency.decimal_separator": ",",
     "currency.thousands_separator": ".",
     "validation.min.numeric": "O campo :attribute deve ser no mínimo :min.",
+    "validation.unique": "O campo :attribute já está em uso.",
+    "validation.account.name.deleted_exists": "Já existe uma conta excluída com este nome, restaure-a.",
     "widget.stats_overview.total_balance": "Saldo Total",
     "widget.stats_overview.income_this_month": "Receitas do Mês",
     "widget.stats_overview.expenses_this_month": "Despesas do Mês",

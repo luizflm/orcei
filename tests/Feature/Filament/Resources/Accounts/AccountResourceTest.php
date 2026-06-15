@@ -4,6 +4,7 @@ declare(strict_types = 1);
 
 use App\Filament\Resources\Accounts\Pages\{CreateAccount, EditAccount, ListAccounts};
 use App\Models\{Account, Transaction, User};
+use Filament\Actions\Testing\TestAction;
 use Illuminate\Support\Facades\App;
 use Livewire\Livewire;
 
@@ -80,6 +81,84 @@ it('requires name to update an account', function (): void {
         ->fillForm(['name' => ''])
         ->call('save')
         ->assertHasFormErrors(['name' => 'required']);
+});
+
+it('rejects a duplicate name among the active accounts of the same user', function (): void {
+    $user = User::factory()->create()->fresh();
+    Account::factory()->for($user)->create(['name' => 'Wallet'])->fresh();
+
+    $this->actingAs($user);
+
+    Livewire::test(CreateAccount::class)
+        ->fillForm(['name' => 'Wallet', 'balance' => '100.00'])
+        ->call('create')
+        ->assertHasFormErrors(['name' => 'unique']);
+});
+
+it('rejects the name of a soft-deleted account and instructs to restore it', function (): void {
+    $user = User::factory()->create()->fresh();
+    Account::factory()->for($user)->create(['name' => 'Wallet'])->fresh()->delete();
+
+    $this->actingAs($user);
+
+    Livewire::test(CreateAccount::class)
+        ->fillForm(['name' => 'Wallet', 'balance' => '100.00'])
+        ->call('create')
+        ->assertHasFormErrors(['name']);
+
+    expect(Account::where('user_id', $user->id)->where('name', 'Wallet')->count())->toBe(0);
+});
+
+it('allows two different users to have an account with the same name', function (): void {
+    $user      = User::factory()->create()->fresh();
+    $otherUser = User::factory()->create()->fresh();
+    Account::factory()->for($otherUser)->create(['name' => 'Wallet'])->fresh();
+
+    $this->actingAs($user);
+
+    Livewire::test(CreateAccount::class)
+        ->fillForm(['name' => 'Wallet', 'balance' => '100.00'])
+        ->call('create')
+        ->assertHasNoFormErrors();
+});
+
+it('hides soft-deleted accounts from the default list', function (): void {
+    $user    = User::factory()->create()->fresh();
+    $active  = Account::factory()->for($user)->create(['name' => 'Active'])->fresh();
+    $trashed = Account::factory()->for($user)->create(['name' => 'Trashed'])->fresh();
+    $trashed->delete();
+
+    $this->actingAs($user);
+
+    Livewire::test(ListAccounts::class)
+        ->assertCanSeeTableRecords([$active])
+        ->assertCanNotSeeTableRecords([$trashed]);
+});
+
+it('soft deletes an account through the table action', function (): void {
+    $user    = User::factory()->create()->fresh();
+    $account = Account::factory()->for($user)->create(['name' => 'Wallet'])->fresh();
+
+    $this->actingAs($user);
+
+    Livewire::test(ListAccounts::class)
+        ->callAction(TestAction::make('delete')->table($account));
+
+    expect($account->fresh()->trashed())->toBeTrue();
+});
+
+it('restores a soft-deleted account through the table action', function (): void {
+    $user    = User::factory()->create()->fresh();
+    $account = Account::factory()->for($user)->create(['name' => 'Wallet'])->fresh();
+    $account->delete();
+
+    $this->actingAs($user);
+
+    Livewire::test(ListAccounts::class)
+        ->filterTable('trashed', true)
+        ->callAction(TestAction::make('restore')->table($account));
+
+    expect($account->fresh()->trashed())->toBeFalse();
 });
 
 it('redirects unauthenticated users to the login page', function (): void {

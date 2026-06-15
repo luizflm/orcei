@@ -13,7 +13,7 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\{Builder, SoftDeletingScope};
 use UnitEnum;
 
 class AccountResource extends Resource
@@ -51,7 +51,9 @@ class AccountResource extends Resource
 
     public static function getEloquentQuery(): Builder
     {
-        return parent::getEloquentQuery()->whereBelongsTo(auth()->user());
+        return parent::getEloquentQuery()
+            ->whereBelongsTo(auth()->user())
+            ->withoutGlobalScopes([SoftDeletingScope::class]);
     }
 
     public static function getRelations(): array
