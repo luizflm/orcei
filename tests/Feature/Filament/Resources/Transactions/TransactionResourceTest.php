@@ -22,6 +22,20 @@ it('lists only the authenticated user transactions', function (): void {
         ->assertCanNotSeeTableRecords([Transaction::where('user_id', $otherUser->id)->first()]);
 });
 
+it('still shows the account name on the table after the account is soft deleted', function (): void {
+    $user        = User::factory()->create()->fresh();
+    $account     = Account::factory()->for($user)->create(['name' => 'Old Wallet'])->fresh();
+    $transaction = Transaction::factory()->for($user)->create(['account_id' => $account->id])->fresh();
+
+    $account->delete();
+
+    $this->actingAs($user);
+
+    Livewire::test(ListTransactions::class)
+        ->assertCanSeeTableRecords([$transaction])
+        ->assertTableColumnStateSet('account.name', 'Old Wallet', $transaction);
+});
+
 it('creates a transaction and assigns it to the authenticated user', function (): void {
     $user     = User::factory()->create()->fresh();
     $account  = Account::factory()->for($user)->create()->fresh();
@@ -67,6 +81,30 @@ it('requires account_id to create a transaction', function (): void {
         ])
         ->call('create')
         ->assertHasFormErrors(['account_id' => 'required']);
+});
+
+it('rejects creating a transaction with a soft-deleted account', function (): void {
+    $user     = User::factory()->create()->fresh();
+    $account  = Account::factory()->for($user)->create()->fresh();
+    $category = Category::factory()->for($user)->create()->fresh();
+
+    $account->delete();
+
+    $this->actingAs($user);
+
+    Livewire::test(CreateTransaction::class)
+        ->fillForm([
+            'account_id'  => $account->id,
+            'category_id' => $category->id,
+            'type'        => TransactionType::EXPENSE->value,
+            'method'      => TransactionMethod::PIX->value,
+            'amount'      => '100.00',
+            'date'        => '2026-05-01',
+        ])
+        ->call('create')
+        ->assertHasFormErrors(['account_id']);
+
+    expect(Transaction::where('account_id', $account->id)->exists())->toBeFalse();
 });
 
 it('requires category_id to create a transaction', function (): void {
@@ -250,6 +288,20 @@ it('filters transactions by account', function (): void {
         ->filterTable('account', $account->id)
         ->assertCanSeeTableRecords([$matchingTransaction])
         ->assertCanNotSeeTableRecords([$otherTransaction]);
+});
+
+it('excludes soft-deleted accounts from the account filter options', function (): void {
+    $user = User::factory()->create()->fresh();
+    Account::factory()->for($user)->create(['name' => 'Visible Wallet'])->fresh();
+    $deleted = Account::factory()->for($user)->create(['name' => 'Hidden Wallet'])->fresh();
+
+    $deleted->delete();
+
+    $this->actingAs($user);
+
+    Livewire::test(ListTransactions::class)
+        ->assertSee('Visible Wallet')
+        ->assertDontSee('Hidden Wallet');
 });
 
 it('filters transactions by category', function (): void {

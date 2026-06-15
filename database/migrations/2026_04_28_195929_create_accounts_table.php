@@ -18,6 +18,9 @@ return new class () extends Migration {
             $table->string('name', 100);
             $table->bigInteger('balance');
             $table->timestamps();
+            $table->softDeletes();
+
+            $table->unique(['user_id', 'name'])->whereNull('deleted_at');
         });
     }
 

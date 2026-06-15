@@ -7,7 +7,7 @@ namespace App\Models;
 use App\Casts\MoneyCast;
 use Database\Factories\AccountFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\{Model, SoftDeletes};
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
 
 /**
@@ -17,11 +17,13 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
  * @property-read string $balance
  * @property-read \Illuminate\Support\Carbon $created_at
  * @property-read \Illuminate\Support\Carbon $updated_at
+ * @property-read \Illuminate\Support\Carbon|null $deleted_at
  */
 class Account extends Model
 {
     /** @use HasFactory<AccountFactory> */
     use HasFactory;
+    use SoftDeletes;
 
     protected function casts(): array
     {

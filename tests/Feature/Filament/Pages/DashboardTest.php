@@ -38,6 +38,21 @@ it('populates the account filter with the authenticated user accounts only', fun
         ->assertDontSee('Other Savings');
 });
 
+it('excludes soft-deleted accounts from the account filter', function (): void {
+    $user = User::factory()->create()->fresh();
+
+    Account::factory()->for($user)->create(['name' => 'Active Savings'])->fresh();
+    $deleted = Account::factory()->for($user)->create(['name' => 'Deleted Savings'])->fresh();
+
+    $deleted->delete();
+
+    $this->actingAs($user);
+
+    Livewire::test(Dashboard::class)
+        ->assertSee('Active Savings')
+        ->assertDontSee('Deleted Savings');
+});
+
 it('shows all accounts placeholder when no filter is selected', function (): void {
     $user = User::factory()->create()->fresh();
 
