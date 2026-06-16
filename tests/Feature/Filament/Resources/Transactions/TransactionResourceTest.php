@@ -181,6 +181,42 @@ it('allows saving an unrelated edit when the category is soft deleted', function
         ->and($transaction->fresh()->amount)->toBe('50.00');
 });
 
+it('keeps the soft-deleted account bound on the edit form', function (): void {
+    $user        = User::factory()->create()->fresh();
+    $account     = Account::factory()->for($user)->create(['name' => 'Old Wallet'])->fresh();
+    $transaction = Transaction::factory()->for($user)->create(['account_id' => $account->id])->fresh();
+
+    $account->delete();
+
+    $this->actingAs($user);
+
+    Livewire::test(EditTransaction::class, ['record' => $transaction->getRouteKey()])
+        ->assertSchemaStateSet(['account_id' => $account->id]);
+});
+
+it('allows saving an unrelated edit when the account is soft deleted', function (): void {
+    $user        = User::factory()->create()->fresh();
+    $account     = Account::factory()->for($user)->create(['name' => 'Old Wallet'])->fresh();
+    $category    = Category::factory()->for($user)->create()->fresh();
+    $transaction = Transaction::factory()->for($user)->create([
+        'account_id'  => $account->id,
+        'category_id' => $category->id,
+        'amount'      => 1000,
+    ])->fresh();
+
+    $account->delete();
+
+    $this->actingAs($user);
+
+    Livewire::test(EditTransaction::class, ['record' => $transaction->getRouteKey()])
+        ->fillForm(['amount' => '50.00'])
+        ->call('save')
+        ->assertHasNoFormErrors();
+
+    expect($transaction->fresh()->account_id)->toBe($account->id)
+        ->and($transaction->fresh()->amount)->toBe('50.00');
+});
+
 it('requires category_id to create a transaction', function (): void {
     $user    = User::factory()->create()->fresh();
     $account = Account::factory()->for($user)->create()->fresh();

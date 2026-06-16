@@ -15,6 +15,7 @@
     "resource.transaction.label": "Transação",
     "resource.transaction.plural": "Transações",
     "resource.transaction.field.account": "Conta",
+    "resource.transaction.field.account_deleted_suffix": " (excluída)",
     "resource.transaction.field.category": "Categoria",
     "resource.transaction.field.category_deleted_suffix": " (excluída)",
     "resource.transaction.field.type": "Tipo",

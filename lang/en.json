@@ -15,6 +15,7 @@
     "resource.transaction.label": "Transaction",
     "resource.transaction.plural": "Transactions",
     "resource.transaction.field.account": "Account",
+    "resource.transaction.field.account_deleted_suffix": " (deleted)",
     "resource.transaction.field.category": "Category",
     "resource.transaction.field.category_deleted_suffix": " (deleted)",
     "resource.transaction.field.type": "Type",

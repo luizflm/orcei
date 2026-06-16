@@ -24,7 +24,7 @@ class UpdateTransaction
             || $transaction->amount !== $newAmount;
 
         if ($balanceAffected) {
-            $oldAccount  = Account::find($transaction->account_id);
+            $oldAccount  = Account::withTrashed()->find($transaction->account_id);
             $reverseType = $transaction->type === TransactionType::INCOME ? TransactionType::EXPENSE : TransactionType::INCOME;
             ($this->adjustAccountBalance)($oldAccount, (string) $transaction->amount, $reverseType);
         }
@@ -40,7 +40,7 @@ class UpdateTransaction
         ]);
 
         if ($balanceAffected) {
-            $newAccount = Account::find($data['account_id']);
+            $newAccount = Account::withTrashed()->find($data['account_id']);
             ($this->adjustAccountBalance)($newAccount, $newAmount, $newType);
         }
 

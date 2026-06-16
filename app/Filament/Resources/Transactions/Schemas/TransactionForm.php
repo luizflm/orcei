@@ -5,7 +5,7 @@ declare(strict_types = 1);
 namespace App\Filament\Resources\Transactions\Schemas;
 
 use App\Enums\{TransactionMethod, TransactionType};
-use App\Models\{Category, Transaction};
+use App\Models\{Account, Category, Transaction};
 use Closure;
 use Filament\Forms\Components\{DatePicker, Select, TextInput, Textarea};
 use Filament\Schemas\Schema;
@@ -23,8 +23,16 @@ class TransactionForm
                     ->relationship(
                         name: 'account',
                         titleAttribute: 'name',
-                        modifyQueryUsing: fn (Builder $query) => $query->whereBelongsTo(auth()->user())
+                        modifyQueryUsing: fn (Builder $query, ?Transaction $record): Builder => $query
+                            ->withoutGlobalScope(SoftDeletingScope::class)
+                            ->whereBelongsTo(auth()->user())
+                            ->where(fn (Builder $query): Builder => $query
+                                ->whereNull('deleted_at')
+                                ->orWhere('id', $record?->account_id))
                     )
+                    ->getOptionLabelFromRecordUsing(fn (Account $account): string => $account->trashed()
+                        ? $account->name . __('resource.transaction.field.account_deleted_suffix')
+                        : $account->name)
                     ->searchable()
                     ->preload()
                     ->required(),
