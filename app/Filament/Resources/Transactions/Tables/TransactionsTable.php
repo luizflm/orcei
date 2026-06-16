@@ -21,7 +21,8 @@ class TransactionsTable
     {
         return $table
             ->modifyQueryUsing(fn (Builder $query): Builder => $query->with([
-                'account' => fn ($query) => $query->withTrashed(),
+                'account'  => fn ($query) => $query->withTrashed(),
+                'category' => fn ($query) => $query->withTrashed(),
             ]))
             ->columns([
                 TextColumn::make('type')

@@ -4,6 +4,7 @@ declare(strict_types = 1);
 
 use App\Filament\Resources\Categories\Pages\{CreateCategory, EditCategory, ListCategories};
 use App\Models\{Category, User};
+use Filament\Actions\Testing\TestAction;
 use Livewire\Livewire;
 
 it('lists only the authenticated user categories', function (): void {
@@ -107,4 +108,96 @@ it('returns 404 when accessing another user category on the edit page', function
 
     $this->get(route('filament.admin.resources.categories.edit', ['record' => $otherCategory->getRouteKey()]))
         ->assertNotFound();
+});
+
+it('hides soft-deleted categories from the default list', function (): void {
+    $user    = User::factory()->create()->fresh();
+    $active  = Category::factory()->for($user)->create(['name' => 'Active'])->fresh();
+    $trashed = Category::factory()->for($user)->create(['name' => 'Trashed'])->fresh();
+    $trashed->delete();
+
+    $this->actingAs($user);
+
+    Livewire::test(ListCategories::class)
+        ->assertCanSeeTableRecords([$active])
+        ->assertCanNotSeeTableRecords([$trashed]);
+});
+
+it('shows only trashed categories when the trashed filter is applied', function (): void {
+    $user    = User::factory()->create()->fresh();
+    $active  = Category::factory()->for($user)->create(['name' => 'Active'])->fresh();
+    $trashed = Category::factory()->for($user)->create(['name' => 'Trashed'])->fresh();
+    $trashed->delete();
+
+    $this->actingAs($user);
+
+    Livewire::test(ListCategories::class)
+        ->filterTable('trashed', false)
+        ->assertCanSeeTableRecords([$trashed])
+        ->assertCanNotSeeTableRecords([$active]);
+});
+
+it('soft deletes a category through the table action', function (): void {
+    $user     = User::factory()->create()->fresh();
+    $category = Category::factory()->for($user)->create(['name' => 'Groceries'])->fresh();
+
+    $this->actingAs($user);
+
+    Livewire::test(ListCategories::class)
+        ->callAction(TestAction::make('delete')->table($category));
+
+    expect($category->fresh()->trashed())->toBeTrue();
+});
+
+it('restores a soft-deleted category through the table action', function (): void {
+    $user     = User::factory()->create()->fresh();
+    $category = Category::factory()->for($user)->create(['name' => 'Groceries'])->fresh();
+    $category->delete();
+
+    $this->actingAs($user);
+
+    Livewire::test(ListCategories::class)
+        ->filterTable('trashed', true)
+        ->callAction(TestAction::make('restore')->table($category));
+
+    expect($category->fresh()->trashed())->toBeFalse();
+});
+
+it('rejects the name of a soft-deleted category and instructs to restore it', function (): void {
+    $user = User::factory()->create()->fresh();
+    Category::factory()->for($user)->create(['name' => 'Groceries'])->fresh()->delete();
+
+    $this->actingAs($user);
+
+    Livewire::test(CreateCategory::class)
+        ->fillForm(['name' => 'Groceries', 'color' => '#ff0000'])
+        ->call('create')
+        ->assertHasFormErrors(['name']);
+
+    expect(Category::where('user_id', $user->id)->where('name', 'Groceries')->count())->toBe(0);
+});
+
+it('rejects a duplicate name among the active categories of the same user', function (): void {
+    $user = User::factory()->create()->fresh();
+    Category::factory()->for($user)->create(['name' => 'Groceries'])->fresh();
+
+    $this->actingAs($user);
+
+    Livewire::test(CreateCategory::class)
+        ->fillForm(['name' => 'Groceries', 'color' => '#ff0000'])
+        ->call('create')
+        ->assertHasFormErrors(['name' => 'unique']);
+});
+
+it('allows two different users to have a category with the same name', function (): void {
+    $user      = User::factory()->create()->fresh();
+    $otherUser = User::factory()->create()->fresh();
+    Category::factory()->for($otherUser)->create(['name' => 'Groceries'])->fresh();
+
+    $this->actingAs($user);
+
+    Livewire::test(CreateCategory::class)
+        ->fillForm(['name' => 'Groceries', 'color' => '#ff0000'])
+        ->call('create')
+        ->assertHasNoFormErrors();
 });

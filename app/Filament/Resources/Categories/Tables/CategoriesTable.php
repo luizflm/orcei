@@ -4,8 +4,9 @@ declare(strict_types = 1);
 
 namespace App\Filament\Resources\Categories\Tables;
 
-use Filament\Actions\{BulkActionGroup, DeleteBulkAction, EditAction};
+use Filament\Actions\{BulkActionGroup, DeleteAction, DeleteBulkAction, EditAction, RestoreAction, RestoreBulkAction};
 use Filament\Tables\Columns\{ColorColumn, TextColumn};
+use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
 
 class CategoriesTable
@@ -21,13 +22,18 @@ class CategoriesTable
                 ColorColumn::make('color')
                     ->label(__('resource.category.field.color')),
             ])
-            ->filters([])
+            ->filters([
+                TrashedFilter::make(),
+            ])
             ->recordActions([
                 EditAction::make(),
+                DeleteAction::make(),
+                RestoreAction::make(),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),
+                    RestoreBulkAction::make(),
                 ]),
             ]);
     }
