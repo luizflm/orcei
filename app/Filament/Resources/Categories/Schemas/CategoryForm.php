@@ -4,10 +4,13 @@ declare(strict_types = 1);
 
 namespace App\Filament\Resources\Categories\Schemas;
 
+use App\Models\Category;
+use Closure;
 use Filament\Actions\Action;
 use Filament\Forms\Components\{ColorPicker, TextInput};
 use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
+use Illuminate\Validation\Rules\Unique;
 
 class CategoryForm
 {
@@ -18,7 +21,24 @@ class CategoryForm
                 TextInput::make('name')
                     ->label(__('resource.category.field.name'))
                     ->required()
-                    ->maxLength(100),
+                    ->maxLength(100)
+                    ->unique(
+                        modifyRuleUsing: fn (Unique $rule): Unique => $rule
+                            ->where('user_id', auth()->id())
+                            ->whereNull('deleted_at'),
+                    )
+                    ->rules([
+                        fn (): Closure => function (string $attribute, mixed $value, Closure $fail): void {
+                            $deletedCategoryExists = Category::onlyTrashed()
+                                ->where('user_id', auth()->id())
+                                ->where('name', (string) $value)
+                                ->exists();
+
+                            if ($deletedCategoryExists) {
+                                $fail(__('validation.category.name.deleted_exists'));
+                            }
+                        },
+                    ]),
                 ColorPicker::make('color')
                     ->label(__('resource.category.field.color'))
                     ->required()

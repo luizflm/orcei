@@ -5,11 +5,12 @@ declare(strict_types = 1);
 namespace App\Filament\Resources\Transactions\Schemas;
 
 use App\Enums\{TransactionMethod, TransactionType};
+use App\Models\{Category, Transaction};
 use Closure;
 use Filament\Forms\Components\{DatePicker, Select, TextInput, Textarea};
 use Filament\Schemas\Schema;
 use Filament\Support\RawJs;
-use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\{Builder, SoftDeletingScope};
 
 class TransactionForm
 {
@@ -32,8 +33,16 @@ class TransactionForm
                     ->relationship(
                         name: 'category',
                         titleAttribute: 'name',
-                        modifyQueryUsing: fn (Builder $query) => $query->whereBelongsTo(auth()->user())
+                        modifyQueryUsing: fn (Builder $query, ?Transaction $record): Builder => $query
+                            ->withoutGlobalScope(SoftDeletingScope::class)
+                            ->whereBelongsTo(auth()->user())
+                            ->where(fn (Builder $query): Builder => $query
+                                ->whereNull('deleted_at')
+                                ->orWhere('id', $record?->category_id))
                     )
+                    ->getOptionLabelFromRecordUsing(fn (Category $category): string => $category->trashed()
+                        ? $category->name . __('resource.transaction.field.category_deleted_suffix')
+                        : $category->name)
                     ->searchable()
                     ->preload()
                     ->required(),

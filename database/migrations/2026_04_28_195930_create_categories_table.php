@@ -18,6 +18,9 @@ return new class () extends Migration {
             $table->string('name', 100);
             $table->string('color', 7);
             $table->timestamps();
+            $table->softDeletes();
+
+            $table->unique(['user_id', 'name'])->whereNull('deleted_at');
         });
     }
 

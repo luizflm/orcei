@@ -36,6 +36,20 @@ it('still shows the account name on the table after the account is soft deleted'
         ->assertTableColumnStateSet('account.name', 'Old Wallet', $transaction);
 });
 
+it('still shows the category name on the table after the category is soft deleted', function (): void {
+    $user        = User::factory()->create()->fresh();
+    $category    = Category::factory()->for($user)->create(['name' => 'Old Groceries'])->fresh();
+    $transaction = Transaction::factory()->for($user)->create(['category_id' => $category->id])->fresh();
+
+    $category->delete();
+
+    $this->actingAs($user);
+
+    Livewire::test(ListTransactions::class)
+        ->assertCanSeeTableRecords([$transaction])
+        ->assertTableColumnStateSet('category.name', 'Old Groceries', $transaction);
+});
+
 it('creates a transaction and assigns it to the authenticated user', function (): void {
     $user     = User::factory()->create()->fresh();
     $account  = Account::factory()->for($user)->create()->fresh();
@@ -105,6 +119,66 @@ it('rejects creating a transaction with a soft-deleted account', function (): vo
         ->assertHasFormErrors(['account_id']);
 
     expect(Transaction::where('account_id', $account->id)->exists())->toBeFalse();
+});
+
+it('rejects creating a transaction with a soft-deleted category', function (): void {
+    $user     = User::factory()->create()->fresh();
+    $account  = Account::factory()->for($user)->create()->fresh();
+    $category = Category::factory()->for($user)->create()->fresh();
+
+    $category->delete();
+
+    $this->actingAs($user);
+
+    Livewire::test(CreateTransaction::class)
+        ->fillForm([
+            'account_id'  => $account->id,
+            'category_id' => $category->id,
+            'type'        => TransactionType::EXPENSE->value,
+            'method'      => TransactionMethod::PIX->value,
+            'amount'      => '100.00',
+            'date'        => '2026-05-01',
+        ])
+        ->call('create')
+        ->assertHasFormErrors(['category_id']);
+
+    expect(Transaction::where('category_id', $category->id)->exists())->toBeFalse();
+});
+
+it('keeps the soft-deleted category bound on the edit form', function (): void {
+    $user        = User::factory()->create()->fresh();
+    $category    = Category::factory()->for($user)->create(['name' => 'Old Groceries'])->fresh();
+    $transaction = Transaction::factory()->for($user)->create(['category_id' => $category->id])->fresh();
+
+    $category->delete();
+
+    $this->actingAs($user);
+
+    Livewire::test(EditTransaction::class, ['record' => $transaction->getRouteKey()])
+        ->assertSchemaStateSet(['category_id' => $category->id]);
+});
+
+it('allows saving an unrelated edit when the category is soft deleted', function (): void {
+    $user        = User::factory()->create()->fresh();
+    $account     = Account::factory()->for($user)->create()->fresh();
+    $category    = Category::factory()->for($user)->create(['name' => 'Old Groceries'])->fresh();
+    $transaction = Transaction::factory()->for($user)->create([
+        'account_id'  => $account->id,
+        'category_id' => $category->id,
+        'amount'      => 1000,
+    ])->fresh();
+
+    $category->delete();
+
+    $this->actingAs($user);
+
+    Livewire::test(EditTransaction::class, ['record' => $transaction->getRouteKey()])
+        ->fillForm(['amount' => '50.00'])
+        ->call('save')
+        ->assertHasNoFormErrors();
+
+    expect($transaction->fresh()->category_id)->toBe($category->id)
+        ->and($transaction->fresh()->amount)->toBe('50.00');
 });
 
 it('requires category_id to create a transaction', function (): void {
@@ -318,6 +392,20 @@ it('filters transactions by category', function (): void {
         ->filterTable('category', $category->id)
         ->assertCanSeeTableRecords([$matchingTransaction])
         ->assertCanNotSeeTableRecords([$otherTransaction]);
+});
+
+it('excludes soft-deleted categories from the category filter options', function (): void {
+    $user = User::factory()->create()->fresh();
+    Category::factory()->for($user)->create(['name' => 'Visible Groceries'])->fresh();
+    $deleted = Category::factory()->for($user)->create(['name' => 'Hidden Groceries'])->fresh();
+
+    $deleted->delete();
+
+    $this->actingAs($user);
+
+    Livewire::test(ListTransactions::class)
+        ->assertSee('Visible Groceries')
+        ->assertDontSee('Hidden Groceries');
 });
 
 it('filters transactions by date range', function (): void {

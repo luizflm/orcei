@@ -13,6 +13,7 @@ test('to array', function (): void {
         'color',
         'created_at',
         'updated_at',
+        'deleted_at',
     ]);
 });
 
@@ -31,4 +32,19 @@ it('has many transactions', function (): void {
 
     expect($category->transactions)->toHaveCount(1)
         ->and($category->transactions->first())->toBeInstanceOf(Transaction::class);
+});
+
+it('soft deletes the category', function (): void {
+    $category = Category::factory()->create()->fresh();
+
+    $category->delete();
+
+    expect($category->trashed())->toBeTrue()
+        ->and($category->deleted_at)->not->toBeNull()
+        ->and(Category::count())->toBe(0)
+        ->and(Category::withTrashed()->count())->toBe(1);
+
+    $this->assertSoftDeleted('categories', [
+        'id' => $category->id,
+    ]);
 });
