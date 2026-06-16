@@ -14,7 +14,7 @@ return new class () extends Migration {
     {
         Schema::create('transactions', function (Blueprint $table): void {
             $table->id();
-            $table->foreignId('user_id')->constrained()->restrictOnDelete();
+            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
             $table->foreignId('account_id')->constrained()->restrictOnDelete();
             $table->foreignId('category_id')->constrained()->restrictOnDelete();
             $table->string('method');
