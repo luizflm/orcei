@@ -5,7 +5,7 @@ declare(strict_types = 1);
 namespace Database\Seeders;
 
 use App\Enums\{TransactionMethod, TransactionType};
-use App\Models\{Account, Category, Transaction, User};
+use App\Models\{Account, Category, RecurringExpense, Transaction, User};
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Eloquent\Factories\Sequence;
 use Illuminate\Database\Seeder;
@@ -61,6 +61,18 @@ class DatabaseSeeder extends Seeder
                     : $expenseMethods[$sequence->index % count($expenseMethods)],
                 'type'   => $sequence->index % 3 === 0 ? TransactionType::INCOME->value : TransactionType::EXPENSE->value,
                 'amount' => $sequence->index % 3 === 0 ? fake()->randomFloat(2, 1000, 8000) : fake()->randomFloat(2, 10, 1500),
+            ])
+            ->create();
+
+        RecurringExpense::factory()
+            ->count(3)
+            ->for($user)
+            ->sequence(fn (Sequence $sequence) => [
+                'account_id'   => $accounts->get($sequence->index % $accounts->count())->id,
+                'category_id'  => $expenseCategories->get($sequence->index % $expenseCategories->count())->id,
+                'method'       => $expenseMethods[$sequence->index % count($expenseMethods)],
+                'amount'       => fake()->randomFloat(2, 10, 1500),
+                'day_of_month' => fake()->numberBetween(1, 28),
             ])
             ->create();
     }

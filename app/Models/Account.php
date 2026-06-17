@@ -25,6 +25,13 @@ class Account extends Model
     use HasFactory;
     use SoftDeletes;
 
+    protected static function booted(): void
+    {
+        static::deleted(function (Account $account): void {
+            $account->recurringExpenses()->update(['is_active' => false]);
+        });
+    }
+
     protected function casts(): array
     {
         return [
@@ -40,5 +47,10 @@ class Account extends Model
     public function transactions(): HasMany
     {
         return $this->hasMany(Transaction::class);
+    }
+
+    public function recurringExpenses(): HasMany
+    {
+        return $this->hasMany(RecurringExpense::class);
     }
 }
