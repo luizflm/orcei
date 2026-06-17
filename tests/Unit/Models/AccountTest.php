@@ -2,7 +2,7 @@
 
 declare(strict_types = 1);
 
-use App\Models\{Account, Transaction, User};
+use App\Models\{Account, RecurringExpense, Transaction, User};
 
 test('to array', function (): void {
     $account = Account::factory()->create()->fresh();
@@ -58,4 +58,16 @@ it('soft deletes the account', function (): void {
     $this->assertSoftDeleted('accounts', [
         'id' => $account->id,
     ]);
+});
+
+it('deactivates its recurring expenses when soft deleted', function (): void {
+    $account          = Account::factory()->create()->fresh();
+    $recurringExpense = RecurringExpense::factory()
+        ->for($account->user)
+        ->create(['account_id' => $account->id, 'is_active' => true])
+        ->fresh();
+
+    $account->delete();
+
+    expect($recurringExpense->fresh()->is_active)->toBeFalse();
 });

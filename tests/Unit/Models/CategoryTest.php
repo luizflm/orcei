@@ -2,7 +2,7 @@
 
 declare(strict_types = 1);
 
-use App\Models\{Category, Transaction, User};
+use App\Models\{Category, RecurringExpense, Transaction, User};
 
 test('to array', function (): void {
     $category = Category::factory()->create()->fresh();
@@ -47,4 +47,16 @@ it('soft deletes the category', function (): void {
     $this->assertSoftDeleted('categories', [
         'id' => $category->id,
     ]);
+});
+
+it('deactivates its recurring expenses when soft deleted', function (): void {
+    $category         = Category::factory()->create()->fresh();
+    $recurringExpense = RecurringExpense::factory()
+        ->for($category->user)
+        ->create(['category_id' => $category->id, 'is_active' => true])
+        ->fresh();
+
+    $category->delete();
+
+    expect($recurringExpense->fresh()->is_active)->toBeFalse();
 });
