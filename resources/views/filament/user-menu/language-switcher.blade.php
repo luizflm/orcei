@@ -1,6 +1,10 @@
 @php $locale = request()->cookie('locale') ?? config('app.locale'); @endphp
 
-<div x-data="{ open: false }" style="position: relative">
+<div
+    x-data="{ open: false, isMobile: window.innerWidth < 1024 }"
+    x-init="window.addEventListener('resize', () => isMobile = window.innerWidth < 1024)"
+    style="position: relative"
+>
     <x-filament::dropdown.list.item
         x-on:click="open = ! open"
         icon="heroicon-o-language"
@@ -14,7 +18,9 @@
         x-transition
         x-cloak
         class="fi-dropdown-panel"
-        style="position: absolute; left: 100%; top: 0; margin-left: 4px; min-width: 196px; z-index: 50;"
+        :style="isMobile
+            ? 'position: absolute; right: 0; top: 100%; margin-top: 4px; min-width: 196px; max-width: calc(100vw - 2rem); z-index: 50;'
+            : 'position: absolute; left: 100%; top: 0; margin-left: 4px; min-width: 196px; z-index: 50;'"
     >
         <x-filament::dropdown.list>
             <x-filament::dropdown.list.item
