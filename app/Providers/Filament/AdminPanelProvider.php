@@ -26,6 +26,8 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->login()
+            ->registration()
+            ->profile()
             ->userMenu(position: UserMenuPosition::Sidebar)
             ->userMenuItems([
                 Action::make('language')
