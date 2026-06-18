@@ -29,7 +29,7 @@ services:
     environment:
       DB_HOST: db
       DB_PORT: 5432
-      POSTGRES_DB: laravel
+      POSTGRES_DB: financial_management
       POSTGRES_USER: root
       POSTGRES_PASSWORD: root
     volumes:

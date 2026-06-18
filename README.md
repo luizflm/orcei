@@ -1,58 +1,141 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Financial Management
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+A personal finance management application built with Laravel and Filament. It lets you track accounts, categorize income and expenses, schedule recurring expenses, and visualize your financial activity through an admin dashboard with charts and stats.
 
-## About Laravel
+## Features
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+- **Accounts** — manage multiple accounts with balances.
+- **Transactions** — record income and expenses with a type, method, category, and account.
+- **Categories** — organize transactions into custom categories.
+- **Recurring expenses** — schedule expenses that are generated automatically over time.
+- **Dashboard** — overview widgets and charts (monthly expenses, expenses by category, stats overview).
+- **Authentication** — self-registration and profile editing via the Filament panel.
+- **Internationalization** — English and Brazilian Portuguese (`en`, `pt_BR`).
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Stack
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+| Layer | Technology |
+|---|---|
+| Language | PHP 8.4 |
+| Framework | Laravel 13 |
+| Admin / UI | Filament 5 |
+| Styling | Tailwind CSS 4 |
+| Database | PostgreSQL (Docker) |
+| Testing | Pest 4 |
+| Static analysis | Larastan 3 |
+| Code style | Laravel Pint |
 
-## Learning Laravel
+## Requirements
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+- PHP 8.4
+- Composer
+- Node.js & npm
+- A database (SQLite works out of the box; PostgreSQL is available via Docker)
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
-
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
-
-## Agentic Development
-
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+## Quick Start
 
 ```bash
-composer require laravel/boost --dev
+# 1. Install dependencies, set up .env, generate key, migrate, and build assets
+composer setup
 
-php artisan boost:install
+# 2. Start the full dev environment (server, queue, logs, Vite)
+composer dev
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+The `composer setup` script runs `composer install`, copies `.env.example` to `.env`, generates the app key, runs migrations, installs npm packages, and builds the front-end assets.
 
-## Contributing
+The `composer dev` script runs the PHP server, queue worker, log viewer (Pail), and Vite concurrently.
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+The application will be available at `http://localhost:8000`.
 
-## Code of Conduct
+### Manual setup
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+If you prefer to run the steps yourself:
 
-## Security Vulnerabilities
+```bash
+composer install
+cp .env.example .env
+php artisan key:generate
+touch database/database.sqlite   # only when using SQLite
+php artisan migrate
+npm install
+npm run build
+php artisan serve
+```
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+### First access
 
-## License
+Registration is enabled on the admin panel, so you can create your account directly at `http://localhost:8000/register`.
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+## Running with Docker
+
+A Docker setup with PHP-FPM, Nginx, and PostgreSQL is included:
+
+```bash
+docker compose up -d
+docker compose exec app composer install
+docker compose exec app php artisan key:generate
+docker compose exec app php artisan migrate
+```
+
+With Docker, set the database connection in `.env`:
+
+```dotenv
+DB_CONNECTION=pgsql
+DB_HOST=db
+DB_PORT=5432
+DB_DATABASE=financial_management
+DB_USERNAME=root
+DB_PASSWORD=root
+```
+
+The app is served at `http://localhost:8000`.
+
+## Testing
+
+This project uses [Pest](https://pestphp.com). Tests run against a refreshed database automatically (configured in `tests/Pest.php`).
+
+```bash
+# Run the full test suite
+composer test
+
+# Or directly
+php artisan test --compact
+
+# Filter a single test
+php artisan test --compact --filter=testName
+```
+
+Tests are organized under `tests/Unit` (models, actions, casts, enums, value objects) and `tests/Feature` (controllers, Filament, jobs, console commands).
+
+## Code Quality
+
+```bash
+# Format code with Pint
+vendor/bin/pint
+
+# Static analysis with Larastan
+vendor/bin/phpstan analyse
+```
+
+## Project Structure
+
+The application follows a thin-controller, action-based architecture:
+
+```
+app/
+  Actions/      # Business logic — one action per use case
+  Casts/        # Custom Eloquent casts (e.g. money)
+  Enums/        # Backed enums (TransactionType, TransactionMethod)
+  Filament/     # Admin panel: Resources, Pages, Widgets
+  Http/         # Controllers, FormRequests, Resources, Middleware
+  Jobs/         # Queued work (e.g. recurring expense generation)
+  Models/       # Account, Category, Transaction, RecurringExpense, User
+  ValueObjects/ # Domain value objects (e.g. Money)
+```
+
+Monetary values are stored as integer cents and converted via a money cast. Business logic lives in Action classes, not controllers or models.
+
+## Internationalization
+
+Translations live in `lang/en.json` and `lang/pt_BR.json`. The default and fallback locales are configured via `APP_LOCALE` and `APP_FALLBACK_LOCALE` in `.env`.
