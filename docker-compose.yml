@@ -16,10 +16,24 @@ services:
     image: nginx:alpine
     restart: unless-stopped
     ports:
-        - "8000:80"
+        - "80:80"
+        - "443:443"
     volumes:
         - ./:/var/www
         - ./docker/nginx/:/etc/nginx/conf.d/
+        - ./.docker/certbot/conf:/etc/letsencrypt
+        - ./.docker/certbot/www:/var/www/certbot
+    command: "/bin/sh -c 'while :; do sleep 6h & wait $${!}; nginx -s reload; done & nginx -g \"daemon off;\"'"
+    networks:
+        - laravel
+
+  certbot:
+    image: certbot/certbot
+    restart: unless-stopped
+    volumes:
+        - ./.docker/certbot/conf:/etc/letsencrypt
+        - ./.docker/certbot/www:/var/www/certbot
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
     networks:
         - laravel
 
