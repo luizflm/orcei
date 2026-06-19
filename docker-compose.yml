@@ -27,15 +27,11 @@ services:
     image: postgres:16-alpine
     restart: unless-stopped
     environment:
-      DB_HOST: db
-      DB_PORT: 5432
-      POSTGRES_DB: financial_management
-      POSTGRES_USER: root
-      POSTGRES_PASSWORD: root
+      POSTGRES_DB: ${DB_DATABASE}
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
     volumes:
       - ./.docker/db:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"
     networks:
       - laravel
 
