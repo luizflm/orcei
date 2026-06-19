@@ -23,6 +23,8 @@ services:
         - ./docker/nginx/:/etc/nginx/conf.d/
         - ./.docker/certbot/conf:/etc/letsencrypt
         - ./.docker/certbot/www:/var/www/certbot
+    # Reload every 6h so renewed certificates are picked up without a manual restart.
+    command: "/bin/sh -c 'while :; do sleep 6h & wait $${!}; nginx -s reload; done & nginx -g \"daemon off;\"'"
     networks:
         - laravel
 
