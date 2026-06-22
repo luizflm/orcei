@@ -16,6 +16,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends --fix-missing \
     libzip-dev \
     zip \
     unzip \
+    supervisor \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
@@ -44,5 +45,8 @@ WORKDIR /var/www
 
 # Copy custom configurations PHP
 COPY docker/php/custom.ini /usr/local/etc/php/conf.d/custom.ini
+
+# Copy Supervisor configuration (managing Horizon and the scheduler)
+COPY docker/supervisor/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
 USER $user
