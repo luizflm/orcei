@@ -23,6 +23,7 @@ class GenerateRecurringExpenseTransaction implements ShouldQueue
         public readonly int $recurringExpenseId,
         public readonly string $referenceDate,
     ) {
+        $this->onQueue('recurring_expenses');
     }
 
     public function handle(CreateTransaction $createTransaction): bool

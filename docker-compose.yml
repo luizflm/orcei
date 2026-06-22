@@ -9,6 +9,7 @@ services:
         - ./:/var/www
     depends_on:
         - db
+        - redis
     networks:
         - laravel
 
@@ -45,6 +46,15 @@ services:
       POSTGRES_PASSWORD: ${DB_PASSWORD}
     volumes:
       - ./.docker/db:/var/lib/postgresql/data
+    networks:
+      - laravel
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    volumes:
+      - ./.docker/redis:/data
     networks:
       - laravel
 

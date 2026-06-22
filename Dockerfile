@@ -22,6 +22,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends --fix-missing \
 # Install PHP extensions
 RUN docker-php-ext-install pdo_pgsql mbstring exif pcntl bcmath gd sockets intl zip
 
+RUN pecl install redis \
+    && docker-php-ext-enable redis
+
 # Install Node.js 20 LTS for building frontend assets
 RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
     && apt-get install -y --no-install-recommends nodejs \
