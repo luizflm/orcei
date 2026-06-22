@@ -13,6 +13,22 @@ services:
     networks:
         - laravel
 
+  supervisor:
+    build:
+        context: .
+        dockerfile: Dockerfile
+    restart: unless-stopped
+    working_dir: /var/www/
+    user: root
+    command: /usr/bin/supervisord -n -c /etc/supervisor/conf.d/supervisord.conf
+    volumes:
+        - ./:/var/www
+    depends_on:
+        - db
+        - redis
+    networks:
+        - laravel
+
   nginx:
     image: nginx:alpine
     restart: unless-stopped
