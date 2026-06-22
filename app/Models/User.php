@@ -20,6 +20,7 @@ use Illuminate\Notifications\Notifiable;
  * @property-read \Illuminate\Support\Carbon|null $email_verified_at
  * @property-read string $password
  * @property-read string|null $remember_token
+ * @property-read bool $is_admin
  * @property-read \Illuminate\Support\Carbon $created_at
  * @property-read \Illuminate\Support\Carbon $updated_at
  */
@@ -35,11 +36,17 @@ class User extends Authenticatable implements FilamentUser
         return true;
     }
 
+    public function isAdmin(): bool
+    {
+        return $this->is_admin;
+    }
+
     protected function casts(): array
     {
         return [
             'email_verified_at' => 'datetime',
             'password'          => 'hashed',
+            'is_admin'          => 'boolean',
         ];
     }
 

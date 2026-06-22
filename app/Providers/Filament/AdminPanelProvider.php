@@ -8,8 +8,10 @@ use App\Http\Middleware\SetLocale;
 use Filament\Actions\Action;
 use Filament\Enums\UserMenuPosition;
 use Filament\Http\Middleware\{Authenticate, AuthenticateSession, DisableBladeIconComponents, DispatchServingFilamentEvent};
+use Filament\Navigation\NavigationItem;
 use Filament\{Panel, PanelProvider};
 use Filament\Support\Colors\Color;
+use Filament\Support\Icons\Heroicon;
 
 use Illuminate\Cookie\Middleware\{AddQueuedCookiesToResponse, EncryptCookies};
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
@@ -41,6 +43,12 @@ class AdminPanelProvider extends PanelProvider
             ->pages([])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
             ->widgets([])
+            ->navigationItems([
+                NavigationItem::make('Horizon')
+                    ->url('/horizon', shouldOpenInNewTab: true)
+                    ->icon(Heroicon::OutlinedCpuChip)
+                    ->visible(fn (): bool => auth()->user()?->isAdmin() ?? false),
+            ])
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,
