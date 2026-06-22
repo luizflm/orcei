@@ -17,12 +17,28 @@ test('to array', function (): void {
         'remember_token',
         'created_at',
         'updated_at',
+        'is_admin',
     ]);
 });
 
 it('casts email_verified_at to Carbon', function (): void {
     $user = User::factory()->create()->fresh();
     expect($user->email_verified_at)->toBeInstanceOf(Carbon::class);
+});
+
+it('casts is_admin to boolean', function (): void {
+    $user = User::factory()->create()->fresh();
+    expect($user->is_admin)->toBeBool();
+});
+
+it('reports a regular user is not an admin', function (): void {
+    $user = User::factory()->create()->fresh();
+    expect($user->isAdmin())->toBeFalse();
+});
+
+it('reports an admin user is an admin', function (): void {
+    $user = User::factory()->admin()->create()->fresh();
+    expect($user->isAdmin())->toBeTrue();
 });
 
 it('has many accounts', function (): void {
