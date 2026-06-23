@@ -1,4 +1,4 @@
-# Project: Financial Management - System Prompt
+# Project: Orcei - System Prompt
 
 You are working on a Laravel 13 application. This is a production
 backend/frontend service handling a personal financial management based on transactions. The application runs
