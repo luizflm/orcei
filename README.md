@@ -1,4 +1,4 @@
-# Financial Management
+# Orcei
 
 A personal finance management application built with Laravel and Filament. It lets you track accounts, categorize income and expenses, schedule recurring expenses, and visualize your financial activity through an admin dashboard with charts and stats.
 
@@ -84,7 +84,7 @@ With Docker, set the database connection in `.env`:
 DB_CONNECTION=pgsql
 DB_HOST=db
 DB_PORT=5432
-DB_DATABASE=financial_management
+DB_DATABASE=orcei
 DB_USERNAME=root
 DB_PASSWORD=root
 ```
