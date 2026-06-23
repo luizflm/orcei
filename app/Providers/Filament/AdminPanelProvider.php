@@ -45,6 +45,7 @@ class AdminPanelProvider extends PanelProvider
             ->widgets([])
             ->navigationItems([
                 NavigationItem::make('Horizon')
+                    ->group(fn (): string => __('nav.group.administration'))
                     ->url('/horizon', shouldOpenInNewTab: true)
                     ->icon(Heroicon::OutlinedCpuChip)
                     ->visible(fn (): bool => auth()->user()?->isAdmin() ?? false),
