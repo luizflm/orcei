@@ -5,8 +5,9 @@ declare(strict_types = 1);
 namespace App\Filament\Resources\Transactions\Tables;
 
 use App\Enums\{TransactionMethod, TransactionType};
+use App\Filament\Exports\TransactionExporter;
 use Carbon\Carbon;
-use Filament\Actions\{BulkActionGroup, DeleteBulkAction, EditAction};
+use Filament\Actions\{BulkActionGroup, DeleteBulkAction, EditAction, ExportBulkAction};
 use Filament\Forms\Components\DatePicker;
 use Filament\Schemas\Components\Utilities\{Get, Set};
 use Filament\Tables\Columns\TextColumn;
@@ -169,6 +170,10 @@ class TransactionsTable
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
+                    ExportBulkAction::make()
+                        ->label(__('resource.transaction.export.label'))
+                        ->exporter(TransactionExporter::class)
+                        ->options(fn (): array => ['locale' => app()->getLocale()]),
                     DeleteBulkAction::make(),
                 ]),
             ]);

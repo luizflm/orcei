@@ -3,9 +3,12 @@
 declare(strict_types = 1);
 
 use App\Enums\{TransactionMethod, TransactionType};
+use App\Filament\Exports\TransactionExporter;
 use App\Filament\Resources\Transactions\Pages\{CreateTransaction, EditTransaction, ListTransactions};
 use App\Models\{Account, Category, Transaction, User};
-use Illuminate\Support\Facades\App;
+use Filament\Actions\Exports\Models\Export;
+use Filament\Actions\Testing\TestAction;
+use Illuminate\Support\Facades\{App, Storage};
 use Livewire\Livewire;
 
 it('lists only the authenticated user transactions', function (): void {
@@ -540,6 +543,105 @@ it('does not apply either date filter when both from and until are future dates'
         ->filterTable('date', ['from' => now()->addWeek()->toDateString(), 'until' => now()->addMonth()->toDateString()])
         ->assertCanSeeTableRecords([$pastTransaction])
         ->assertCanNotSeeTableRecords([$futureTransaction]);
+});
+
+it('shows the export bulk action on the transactions list', function (): void {
+    $user = User::factory()->create()->fresh();
+
+    $this->actingAs($user);
+
+    Livewire::test(ListTransactions::class)
+        ->assertActionExists(TestAction::make('export')->table()->bulk());
+});
+
+it('exports only the selected transactions to CSV', function (): void {
+    Storage::fake('local');
+
+    $user = User::factory()->create()->fresh();
+
+    $selected = Transaction::factory()->for($user)->count(2)->create();
+    Transaction::factory()->for($user)->count(3)->create();
+
+    $this->actingAs($user);
+
+    Livewire::test(ListTransactions::class)
+        ->selectTableRecords($selected->pluck('id')->toArray())
+        ->callAction(TestAction::make('export')->table()->bulk())
+        ->assertHasNoFormErrors();
+
+    $export = Export::query()->latest('id')->first();
+
+    expect($export)->not->toBeNull()
+        ->and($export->exporter)->toBe(TransactionExporter::class)
+        ->and($export->total_rows)->toBe(2)
+        ->and($export->user_id)->toBe($user->id);
+});
+
+it('exports enum values translated to the request locale', function (): void {
+    Storage::fake('local');
+
+    App::setLocale('pt_BR');
+
+    $user = User::factory()->create()->fresh();
+
+    Transaction::factory()->for($user)->create([
+        'type'   => TransactionType::EXPENSE->value,
+        'method' => TransactionMethod::CREDIT->value,
+        'amount' => '50.00',
+    ]);
+
+    $this->actingAs($user);
+
+    Livewire::test(ListTransactions::class)
+        ->selectTableRecords(Transaction::query()->pluck('id')->toArray())
+        ->callAction(TestAction::make('export')->table()->bulk())
+        ->assertHasNoFormErrors();
+
+    $export = Export::query()->latest('id')->first();
+
+    $csvContents = collect(Storage::disk('local')->allFiles($export->getFileDirectory()))
+        ->filter(fn (string $path): bool => str_ends_with($path, '.csv'))
+        ->map(fn (string $path): string => Storage::disk('local')->get($path))
+        ->implode("\n");
+
+    expect($csvContents)
+        ->toContain('Despesa')
+        ->toContain('Crédito')
+        ->toContain('50,00')
+        ->not->toContain('5000')
+        ->not->toContain('expense')
+        ->not->toContain('Credit');
+});
+
+it('formats the amount as currency using the request locale', function (): void {
+    Storage::fake('local');
+
+    App::setLocale('pt_BR');
+
+    $user = User::factory()->create()->fresh();
+
+    Transaction::factory()->for($user)->create([
+        'amount' => '1234.56',
+    ]);
+
+    $this->actingAs($user);
+
+    Livewire::test(ListTransactions::class)
+        ->selectTableRecords(Transaction::query()->pluck('id')->toArray())
+        ->callAction(TestAction::make('export')->table()->bulk())
+        ->assertHasNoFormErrors();
+
+    $export = Export::query()->latest('id')->first();
+
+    $csvContents = collect(Storage::disk('local')->allFiles($export->getFileDirectory()))
+        ->filter(fn (string $path): bool => str_ends_with($path, '.csv'))
+        ->map(fn (string $path): string => Storage::disk('local')->get($path))
+        ->implode("\n");
+
+    expect($csvContents)
+        ->toContain('1.234,56')
+        ->toContain('R$')
+        ->not->toContain('1234.56');
 });
 
 it('redirects unauthenticated users to the login page', function (): void {
