@@ -6,7 +6,7 @@ namespace App\Providers\Filament;
 
 use App\Http\Middleware\SetLocale;
 use Filament\Actions\Action;
-use Filament\Enums\UserMenuPosition;
+use Filament\Enums\{DatabaseNotificationsPosition, UserMenuPosition};
 use Filament\Http\Middleware\{Authenticate, AuthenticateSession, DisableBladeIconComponents, DispatchServingFilamentEvent};
 use Filament\Navigation\NavigationItem;
 use Filament\{Panel, PanelProvider};
@@ -50,6 +50,7 @@ class AdminPanelProvider extends PanelProvider
                     ->icon(Heroicon::OutlinedCpuChip)
                     ->visible(fn (): bool => auth()->user()?->isAdmin() ?? false),
             ])
+            ->databaseNotifications(position: DatabaseNotificationsPosition::Sidebar)
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,
