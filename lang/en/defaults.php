@@ -12,4 +12,8 @@ return [
         'loan'      => 'Loan',
         'rent'      => 'Rent',
     ],
+    'accounts' => [
+        'credit' => 'Your bank - Credit',
+        'debit'  => 'Your bank - Debit',
+    ],
 ];

@@ -12,4 +12,8 @@ return [
         'loan'      => 'Empréstimo',
         'rent'      => 'Aluguel',
     ],
+    'accounts' => [
+        'credit' => 'Seu banco - Crédito',
+        'debit'  => 'Seu banco - Débito',
+    ],
 ];
