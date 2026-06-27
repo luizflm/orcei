@@ -35,7 +35,8 @@ it('has many transactions', function (): void {
 });
 
 it('soft deletes the category', function (): void {
-    $category = Category::factory()->create()->fresh();
+    $user     = User::withoutEvents(fn () => User::factory()->create());
+    $category = Category::factory()->for($user)->create()->fresh();
 
     $category->delete();
 

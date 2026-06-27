@@ -4,6 +4,7 @@ declare(strict_types = 1);
 
 namespace App\Providers\Filament;
 
+use App\Filament\Auth\Register;
 use App\Http\Middleware\SetLocale;
 use Filament\Actions\Action;
 use Filament\Enums\{DatabaseNotificationsPosition, UserMenuPosition};
@@ -28,7 +29,7 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('')
             ->login()
-            ->registration()
+            ->registration(Register::class)
             ->profile()
             ->userMenu(position: UserMenuPosition::Sidebar)
             ->userMenuItems([
