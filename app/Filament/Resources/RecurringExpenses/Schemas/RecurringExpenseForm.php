@@ -107,7 +107,8 @@ class RecurringExpenseForm
                     ->required(),
                 Toggle::make('is_active')
                     ->label(__('resource.recurring_expense.field.is_active'))
-                    ->default(true),
+                    ->default(true)
+                    ->inline(false),
                 Textarea::make('description')
                     ->label(__('resource.recurring_expense.field.description'))
                     ->maxLength(255)
