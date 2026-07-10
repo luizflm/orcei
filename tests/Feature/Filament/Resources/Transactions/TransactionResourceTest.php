@@ -605,7 +605,7 @@ it('exports enum values translated to the request locale', function (): void {
         ->implode("\n");
 
     expect($csvContents)
-        ->toContain('Despesa')
+        ->toContain('Saída')
         ->toContain('Crédito')
         ->toContain('50,00')
         ->not->toContain('5000')
