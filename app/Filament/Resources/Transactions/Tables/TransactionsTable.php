@@ -4,8 +4,10 @@ declare(strict_types = 1);
 
 namespace App\Filament\Resources\Transactions\Tables;
 
+use App\Actions\Transactions\DeleteTransaction;
 use App\Enums\{TransactionMethod, TransactionType};
 use App\Filament\Exports\TransactionExporter;
+use App\Models\Transaction;
 use Carbon\Carbon;
 use Filament\Actions\{BulkActionGroup, DeleteBulkAction, EditAction, ExportBulkAction};
 use Filament\Forms\Components\DatePicker;
@@ -15,6 +17,7 @@ use Filament\Tables\Filters\{Filter, SelectFilter};
 use Filament\Tables\Filters\Indicator;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Collection;
 
 class TransactionsTable
 {
@@ -174,7 +177,11 @@ class TransactionsTable
                         ->label(__('resource.transaction.export.label'))
                         ->exporter(TransactionExporter::class)
                         ->options(fn (): array => ['locale' => app()->getLocale()]),
-                    DeleteBulkAction::make(),
+                    DeleteBulkAction::make()
+                        ->action(function (Collection $records): void {
+                            $deleteTransaction = app(DeleteTransaction::class);
+                            $records->each(fn (Transaction $record) => $deleteTransaction($record));
+                        }),
                 ]),
             ]);
     }
