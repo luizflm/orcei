@@ -2,6 +2,7 @@
 
 declare(strict_types = 1);
 
+use App\Actions\Transactions\CreateTransaction as CreateTransactionAction;
 use App\Enums\{TransactionMethod, TransactionType};
 use App\Filament\Exports\TransactionExporter;
 use App\Filament\Resources\Transactions\Pages\{CreateTransaction, EditTransaction, ListTransactions};
@@ -707,4 +708,68 @@ it('rejects a non-numeric amount value', function (): void {
         ])
         ->call('create')
         ->assertHasFormErrors(['amount']);
+});
+
+it('adjusts the account balance when transactions are deleted through the bulk action', function (): void {
+    $user     = User::factory()->create()->fresh();
+    $account  = Account::factory()->for($user)->create(['balance' => '1000.00'])->fresh();
+    $category = Category::factory()->for($user)->create()->fresh();
+
+    $createTransaction = app(CreateTransactionAction::class);
+
+    $expense = $createTransaction([
+        'account_id'  => $account->id,
+        'category_id' => $category->id,
+        'type'        => TransactionType::EXPENSE->value,
+        'method'      => TransactionMethod::PIX->value,
+        'amount'      => '200.00',
+        'date'        => '2026-05-01',
+    ], $user->id);
+
+    $income = $createTransaction([
+        'account_id'  => $account->id,
+        'category_id' => $category->id,
+        'type'        => TransactionType::INCOME->value,
+        'method'      => TransactionMethod::PIX->value,
+        'amount'      => '50.00',
+        'date'        => '2026-05-01',
+    ], $user->id);
+
+    expect($account->fresh()->balance)->toBe('850.00');
+
+    $this->actingAs($user);
+
+    Livewire::test(ListTransactions::class)
+        ->selectTableRecords([$expense->id, $income->id])
+        ->callAction(TestAction::make('delete')->table()->bulk());
+
+    expect(Transaction::whereIn('id', [$expense->id, $income->id])->exists())->toBeFalse()
+        ->and($account->fresh()->balance)->toBe('1000.00');
+});
+
+it('leaves other accounts balances untouched when bulk deleting transactions', function (): void {
+    $user      = User::factory()->create()->fresh();
+    $account   = Account::factory()->for($user)->create(['balance' => '1000.00'])->fresh();
+    $untouched = Account::factory()->for($user)->create(['balance' => '500.00'])->fresh();
+    $category  = Category::factory()->for($user)->create()->fresh();
+
+    $transaction = app(CreateTransactionAction::class)([
+        'account_id'  => $account->id,
+        'category_id' => $category->id,
+        'type'        => TransactionType::EXPENSE->value,
+        'method'      => TransactionMethod::PIX->value,
+        'amount'      => '300.00',
+        'date'        => '2026-05-01',
+    ], $user->id);
+
+    expect($account->fresh()->balance)->toBe('700.00');
+
+    $this->actingAs($user);
+
+    Livewire::test(ListTransactions::class)
+        ->selectTableRecords([$transaction->id])
+        ->callAction(TestAction::make('delete')->table()->bulk());
+
+    expect($account->fresh()->balance)->toBe('1000.00')
+        ->and($untouched->fresh()->balance)->toBe('500.00');
 });
