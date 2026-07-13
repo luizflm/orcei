@@ -1,0 +1,56 @@
+<?php
+
+declare(strict_types = 1);
+
+namespace App\Models;
+
+use App\Casts\MoneyCast;
+use Database\Factories\AccountFactory;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\{Model, SoftDeletes};
+use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
+
+/**
+ * @property-read int $id
+ * @property-read int $user_id
+ * @property-read string $name
+ * @property-read string $balance
+ * @property-read \Illuminate\Support\Carbon $created_at
+ * @property-read \Illuminate\Support\Carbon $updated_at
+ * @property-read \Illuminate\Support\Carbon|null $deleted_at
+ */
+class Account extends Model
+{
+    /** @use HasFactory<AccountFactory> */
+    use HasFactory;
+    use SoftDeletes;
+
+    protected static function booted(): void
+    {
+        static::deleted(function (Account $account): void {
+            $account->recurringExpenses()->update(['is_active' => false]);
+        });
+    }
+
+    protected function casts(): array
+    {
+        return [
+            'balance' => MoneyCast::class,
+        ];
+    }
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    public function transactions(): HasMany
+    {
+        return $this->hasMany(Transaction::class);
+    }
+
+    public function recurringExpenses(): HasMany
+    {
+        return $this->hasMany(RecurringExpense::class);
+    }
+}

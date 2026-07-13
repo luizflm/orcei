@@ -12,13 +12,25 @@ RUN apt-get update && apt-get install -y --no-install-recommends --fix-missing \
     libxml2-dev \
     libpq-dev \
     librdkafka-dev \
+    libicu-dev \
+    libzip-dev \
     zip \
     unzip \
+    supervisor \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
 # Install PHP extensions
-RUN docker-php-ext-install pdo_pgsql mbstring exif pcntl bcmath gd sockets
+RUN docker-php-ext-install pdo_pgsql mbstring exif pcntl bcmath gd sockets intl zip
+
+RUN pecl install redis \
+    && docker-php-ext-enable redis
+
+# Install Node.js 20 LTS for building frontend assets
+RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
+    && apt-get install -y --no-install-recommends nodejs \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
 # Get latest Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
@@ -33,5 +45,8 @@ WORKDIR /var/www
 
 # Copy custom configurations PHP
 COPY docker/php/custom.ini /usr/local/etc/php/conf.d/custom.ini
+
+# Copy Supervisor configuration (managing Horizon and the scheduler)
+COPY docker/supervisor/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
 USER $user

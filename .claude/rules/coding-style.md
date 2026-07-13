@@ -121,6 +121,5 @@ class Order extends Model
 ```
 
 ## Migration Conventions
-- Use Restrict Deletes, not Cascade deletes
 - Do not use default values
 - Use the string() method on columns that will be casted to an Enum instead of using the enum() method.
