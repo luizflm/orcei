@@ -19,6 +19,7 @@ A personal finance management application built with Laravel and Filament. It le
 | Language | PHP 8.4 |
 | Framework | Laravel 13 |
 | Admin / UI | Filament 5 |
+| Queues | Redis 7 |
 | Styling | Tailwind CSS 4 |
 | Database | PostgreSQL (Docker) |
 | Testing | Pest 4 |
@@ -31,6 +32,7 @@ A personal finance management application built with Laravel and Filament. It le
 - Composer
 - Node.js & npm
 - A database (SQLite works out of the box; PostgreSQL is available via Docker)
+- Redis 7 (used as the queue driver — required to process queued jobs, such as recurring expense generation)
 
 ## Quick Start
 
@@ -45,6 +47,8 @@ composer dev
 The `composer setup` script runs `composer install`, copies `.env.example` to `.env`, generates the app key, runs migrations, installs npm packages, and builds the front-end assets.
 
 The `composer dev` script runs the PHP server, queue worker, log viewer (Pail), and Vite concurrently.
+
+> **Queue driver:** the app uses Redis 7 for queues. Make sure a Redis server is running and reachable (`REDIS_HOST`, `REDIS_PORT`, etc. in `.env`) before starting the queue worker (`composer dev` or `php artisan queue:work`), otherwise queued jobs — such as recurring expense generation — won't be processed.
 
 The application will be available at `http://localhost:8000`.
 
@@ -67,15 +71,21 @@ php artisan serve
 
 Registration is enabled on the admin panel, so you can create your account directly at `http://localhost:8000/register`.
 
+If you'd rather try the app with sample data instead of creating a new account, run `php artisan db:seed` and log in with the default admin user:
+
+- **Email:** `admin@admin.com`
+- **Password:** `admin`
+
 ## Running with Docker
 
-A Docker setup with PHP-FPM, Nginx, and PostgreSQL is included:
+A Docker setup with PHP-FPM, Nginx, PostgreSQL, and Redis is included:
 
 ```bash
 docker compose up -d
 docker compose exec app composer install
 docker compose exec app php artisan key:generate
 docker compose exec app php artisan migrate
+docker compose exec app php artisan db:seed # (optional)
 ```
 
 With Docker, set the database connection in `.env`:
@@ -87,6 +97,14 @@ DB_PORT=5432
 DB_DATABASE=orcei
 DB_USERNAME=root
 DB_PASSWORD=root
+```
+
+And the queue connection to use the Redis service:
+
+```dotenv
+QUEUE_CONNECTION=redis
+REDIS_HOST=redis
+REDIS_PORT=6379
 ```
 
 The app is served at `http://localhost:8000`.
@@ -117,24 +135,6 @@ vendor/bin/pint
 # Static analysis with Larastan
 vendor/bin/phpstan analyse
 ```
-
-## Project Structure
-
-The application follows a thin-controller, action-based architecture:
-
-```
-app/
-  Actions/      # Business logic — one action per use case
-  Casts/        # Custom Eloquent casts (e.g. money)
-  Enums/        # Backed enums (TransactionType, TransactionMethod)
-  Filament/     # Admin panel: Resources, Pages, Widgets
-  Http/         # Controllers, FormRequests, Resources, Middleware
-  Jobs/         # Queued work (e.g. recurring expense generation)
-  Models/       # Account, Category, Transaction, RecurringExpense, User
-  ValueObjects/ # Domain value objects (e.g. Money)
-```
-
-Monetary values are stored as integer cents and converted via a money cast. Business logic lives in Action classes, not controllers or models.
 
 ## Internationalization
 
