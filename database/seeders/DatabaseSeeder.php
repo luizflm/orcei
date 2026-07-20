@@ -4,10 +4,10 @@ declare(strict_types = 1);
 
 namespace Database\Seeders;
 
+use App\Actions\Accounts\AdjustAccountBalance;
 use App\Enums\{TransactionMethod, TransactionType};
 use App\Models\{Account, Category, RecurringExpense, Transaction, User};
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
-use Illuminate\Database\Eloquent\Factories\Sequence;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
@@ -16,64 +16,76 @@ class DatabaseSeeder extends Seeder
 
     public function run(): void
     {
-        $user = User::factory()->create([
-            'name'  => 'Test User',
-            'email' => 'test@example.com',
+        $user = User::factory()->admin()->create([
+            'name'     => 'Admin',
+            'email'    => 'admin@admin.com',
+            'password' => 'admin',
         ]);
 
         $accounts = collect([
-            Account::factory()->for($user)->create(['name' => 'Nubank']),
-            Account::factory()->for($user)->create(['name' => 'Picpay']),
+            Account::factory()->for($user)->create([
+                'name'    => 'Nubank',
+                'balance' => 0,
+            ]),
+            Account::factory()->for($user)->create([
+                'name'    => 'Picpay',
+                'balance' => 150,
+            ]),
         ]);
 
         $expenseCategories = collect([
-            Category::factory()->for($user)->create(['name' => 'Food', 'color' => '#FF6B6B']),
-            Category::factory()->for($user)->create(['name' => 'Transport', 'color' => '#4ECDC4']),
-            Category::factory()->for($user)->create(['name' => 'Health', 'color' => '#45B7D1']),
-            Category::factory()->for($user)->create(['name' => 'Entertainment', 'color' => '#96CEB4']),
-            Category::factory()->for($user)->create(['name' => 'Utilities', 'color' => '#98D8C8']),
+            Category::factory()->for($user)->create(['name' => 'Comida', 'color' => '#FF6B6B']),
+            Category::factory()->for($user)->create(['name' => 'Transporte', 'color' => '#4ECDC4']),
+            Category::factory()->for($user)->create(['name' => 'Saúde', 'color' => '#45B7D1']),
+            Category::factory()->for($user)->create(['name' => 'Entretenimento', 'color' => '#96CEB4']),
+            Category::factory()->for($user)->create(['name' => 'Utilidades', 'color' => '#98D8C8']),
         ]);
 
-        $salaryCategory = Category::factory()->for($user)->create(['name' => 'Salary', 'color' => '#FFEAA7']);
+        $salaryCategory = Category::factory()->for($user)->create(['name' => 'Salário', 'color' => '#FFEAA7']);
 
-        $incomeMethods = [
+        $incomeMethods = collect([
             TransactionMethod::PIX->value,
             TransactionMethod::CASH->value,
-        ];
+        ]);
 
-        $expenseMethods = [
+        $expenseMethods = collect([
             TransactionMethod::PIX->value,
             TransactionMethod::CASH->value,
             TransactionMethod::CREDIT->value,
             TransactionMethod::DEBIT->value,
-        ];
+        ]);
 
-        Transaction::factory()
-            ->count(20)
-            ->for($user)
-            ->sequence(fn (Sequence $sequence) => [
-                'account_id'  => $accounts->get($sequence->index % $accounts->count())->id,
-                'category_id' => $sequence->index % 3 === 0
-                    ? $salaryCategory->id
-                    : $expenseCategories->get($sequence->index % $expenseCategories->count())->id,
-                'method' => $sequence->index % 3 === 0
-                    ? $incomeMethods[$sequence->index % count($incomeMethods)]
-                    : $expenseMethods[$sequence->index % count($expenseMethods)],
-                'type'   => $sequence->index % 3 === 0 ? TransactionType::INCOME->value : TransactionType::EXPENSE->value,
-                'amount' => $sequence->index % 3 === 0 ? fake()->randomFloat(2, 1000, 8000) : fake()->randomFloat(2, 10, 1500),
-            ])
-            ->create();
+        $firstTransaction = Transaction::factory()->for($user)->create([
+            'account_id'  => $accounts->first(),
+            'category_id' => $salaryCategory->id,
+            'method'      => $incomeMethods->random(),
+            'type'        => TransactionType::INCOME->value,
+            'amount'      => '3000.00',
+            'description' => 'Exemplo de transação de entrada',
+            'date'        => now()->format('Y-m-d'),
+        ]);
 
-        RecurringExpense::factory()
-            ->count(3)
-            ->for($user)
-            ->sequence(fn (Sequence $sequence) => [
-                'account_id'   => $accounts->get($sequence->index % $accounts->count())->id,
-                'category_id'  => $expenseCategories->get($sequence->index % $expenseCategories->count())->id,
-                'method'       => $expenseMethods[$sequence->index % count($expenseMethods)],
-                'amount'       => fake()->randomFloat(2, 10, 1500),
-                'day_of_month' => fake()->numberBetween(1, 28),
-            ])
-            ->create();
+        $secondTransaction = Transaction::factory()->for($user)->create([
+            'account_id'  => $accounts->first(),
+            'category_id' => $expenseCategories->random(),
+            'method'      => $expenseMethods->random(),
+            'type'        => TransactionType::EXPENSE->value,
+            'amount'      => '150.00',
+            'description' => 'Exemplo de transação de saída',
+            'date'        => now()->format('Y-m-d'),
+        ]);
+
+        RecurringExpense::factory()->for($user)->create([
+            'account_id'   => $accounts->first(),
+            'category_id'  => $expenseCategories->random(),
+            'method'       => TransactionMethod::CREDIT->value,
+            'amount'       => '69.99',
+            'description'  => 'Exemplo: Conta de Internet',
+            'day_of_month' => 1,
+        ]);
+
+        $adjustAccountBalance = app(AdjustAccountBalance::class);
+        $adjustAccountBalance($firstTransaction->account, $firstTransaction->amount, $firstTransaction->type);
+        $adjustAccountBalance($secondTransaction->account, $secondTransaction->amount, $secondTransaction->type);
     }
 }
